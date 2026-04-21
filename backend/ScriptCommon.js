@@ -1559,10 +1559,10 @@ function checkLocation(inputLat, inputLong, allowedRadius) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        console.log(`Current location: ${latitude}, ${longitude}`);
-
         const distance = getDistance(latitude, longitude, inputLat, inputLong);
-        resolve(distance <= allowedRadius ? 1 : 0);
+        //SHOW_INFO_POPUP(`Current location: ${latitude}, ${longitude}, Distance: ${distance}`);
+        console.log(`Current location: ${latitude}, ${longitude}, Distance: ${distance}`)
+        resolve(distance <= allowedRadius ? 1 : latitude+"_"+longitude+"_"+distance);
       },
       (error) => {
         console.error("Geolocation error:", error.message);
