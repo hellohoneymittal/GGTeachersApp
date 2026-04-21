@@ -483,20 +483,6 @@ function exportTableToExcel(tableId, filename = "data.xlsx") {
   XLSX.writeFile(wb, filename);
 }
 
-function daySuffix(day) {
-  if (day >= 11 && day <= 13) return "th"; // Special case for 11th, 12th, and 13th
-  switch (day % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
-
 async function API_HANDLER_AXIOS(request) {
   try {
     const url = APPLICATION_URL;
