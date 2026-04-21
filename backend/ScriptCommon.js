@@ -1570,7 +1570,7 @@ function checkLocation(inputLat, inputLong, allowedRadius) {
         else
           formattedDistance = Number(distance).toFixed(2) + " m";
 
-        resolve(distance <= allowedRadius ? 1 : latitude+"_"+longitude+"_"+formattedDistance);
+        resolve(distance <= allowedRadius ? 1 : "("+Number(latitude).toFixed(4)+","+Number(longitude).toFixed(4)+")_"+formattedDistance);
       },
       (error) => {
         console.error("Geolocation error:", error.message);
