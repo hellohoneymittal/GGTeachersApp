@@ -502,52 +502,57 @@ async function openAttendanceWindow() {
   }
 
   //Check current location
+  try{
+    const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
 
-  const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
-
-  if (result !== 1) {
-    SHOW_ERROR_POPUP("Outside Gurukul campus ❌");
-    return; // ✅ NOW this works as expected
-  }
-
-  console.log(`Inside Gurukul!`)
-
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
-    selectedTeacher,
-  );
-
-  if (outputData?.status && outputData.response) {
-    if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
-    ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
-      return;
+    if (result !== 1) {
+      SHOW_ERROR_POPUP("Outside Gurukul campus ❌");
+      return; // ✅ NOW this works as expected
     }
 
-    if (Object.keys(outputData.response.data).length == 0) {
-      SHOW_INFO_POPUP("No classes scheduled for today!");
-      return;
-    }
+    console.log(`Inside Gurukul!`)
 
-    ctResponse = outputData.response.cTResponse;
-    classSubList = outputData.response.data;
-    populateClassDropdown();
-  } else {
-    SHOW_ERROR_POPUP(
-      "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
+    const outputData = await CALL_API(
+      API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
+      selectedTeacher,
     );
-    return;
+
+    if (outputData?.status && outputData.response) {
+      if (
+        typeof outputData.response === "string" &&
+        outputData.response.includes("ERR")
+      ) {
+        SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+        return;
+      }
+
+      if (Object.keys(outputData.response.data).length == 0) {
+        SHOW_INFO_POPUP("No classes scheduled for today!");
+        return;
+      }
+
+      ctResponse = outputData.response.cTResponse;
+      classSubList = outputData.response.data;
+      populateClassDropdown();
+    } else {
+      SHOW_ERROR_POPUP(
+        "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
+      );
+      return;
+    }
+
+    //Resetting the next page
+
+    document.getElementById("nextBtn").disabled = true;
+
+    document.querySelectorAll('input[name="ques"]').forEach((el) => {
+      el.checked = false;
+    });
+
+    SHOW_SPECIFIC_DIV("pledgePopup");
   }
-
-  //Resetting the next page
-
-  document.getElementById("nextBtn").disabled = true;
-
-  document.querySelectorAll('input[name="ques"]').forEach((el) => {
-    el.checked = false;
-  });
-
-  SHOW_SPECIFIC_DIV("pledgePopup");
+  catch (error) {
+    console.error(error);
+    SHOW_ERROR_POPUP(`ERROR: ${error}`);
+  }
 }
