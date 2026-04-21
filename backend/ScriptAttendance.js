@@ -553,6 +553,7 @@ async function openAttendanceWindow() {
   }
   catch (error) {
     console.error(error);
-    SHOW_ERROR_POPUP(`ERROR: ${error}`);
+    if(error.message)
+      SHOW_ERROR_POPUP(`ERROR: ${error.message}`);
   }
 }
