@@ -503,14 +503,14 @@ async function openAttendanceWindow() {
 
   //Check current location
 
-  // const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
+  const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
 
-  // if (result !== 1) {
-  //   SHOW_ERROR_POPUP("Outside Gurukul campus ❌");
-  //   return; // ✅ NOW this works as expected
-  // }
+  if (result !== 1) {
+    SHOW_ERROR_POPUP("Outside Gurukul campus ❌");
+    return; // ✅ NOW this works as expected
+  }
 
-  // console.log(`Inside Gurukul!`)
+  console.log(`Inside Gurukul!`)
 
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
