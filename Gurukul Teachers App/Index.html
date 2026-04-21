@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GG Teacher App</title>
+
+    <link rel="stylesheet" href="StylesCommon.css" />
+    <link rel="stylesheet" href="StylesYearlyAdmissionKitSpecific.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div class="primaryContainerDiv">
+      <div id="loadingSpinner" style="display: none">
+        <div class="spinner"></div>
+      </div>
+      <div class="infoPopup" id="successPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon success"></div>
+          <h2 class="infoPopup-heading success">Success!</h2>
+          <div id="successMessage" class="infoPopup-message"></div>
+          <button class="green" id="successOkButton">OKAY</button>
+        </div>
+      </div>
+      <div class="infoPopup" id="errorPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon error"></div>
+          <h2 class="infoPopup-heading error">Error!</h2>
+          <div id="errorMessage" class="infoPopup-message"></div>
+          <button class="red" onclick="CLOSE_INFO_POPUP('errorPopup')">
+            TRY AGAIN
+          </button>
+        </div>
+      </div>
+      <div class="infoPopup" id="infoPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon info"></div>
+          <h2 class="infoPopup-heading info">Information</h2>
+          <div id="infoMessage" class="infoPopup-message"></div>
+          <button class="green" onclick="CLOSE_INFO_POPUP('infoPopup')">
+            OKAY
+          </button>
+        </div>
+      </div>
+      <div class="infoPopup" id="confirmationPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon confirmation"></div>
+          <div class="infoPopup-message" id="confirmationMessage"></div>
+          <div class="button-row">
+            <button class="red" id="confirmationNoButton">NO</button>
+            <button class="green" id="confirmationYesButton">YES</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="infoPopup" id="confirmationGridPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon confirmation"></div>
+
+          <!-- Status Text Area -->
+          <div id="confirmationGridStatusText" class="heading"></div>
+
+          <!-- Table Grid Container -->
+          <div
+            id="confirmationGridContainer"
+            class="collection-table-container scrollable-content-table"
+            style="margin-top: 10px"
+          >
+            <table id="confirmationGridTable">
+              <thead id="confirmationGridTHead" class="table-header">
+                <!-- Table headers will be dynamically generated here -->
+              </thead>
+              <tbody id="confirmationGridTBody">
+                <!-- Table rows will be dynamically generated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Buttons for Confirmation -->
+          <div class="button-row">
+            <button class="red" id="confirmationGridNoButton">NO</button>
+            <button class="green" id="confirmationGridYesButton">YES</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" style="display: flex" id="passwordPopup">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+
+          <h2>Teachers' App</h2>
+
+          <input
+            type="text"
+            id="passworTxtBox"
+            placeholder="Password"
+            required
+          />
+          <div class="error" id="inputPasswordError"></div>
+          <div class="button-row">
+            <button
+              class="red"
+              onclick="
+                document.getElementById('passworTxtBox').value = '';
+                document.getElementById('inputPasswordError').innerHTML = '';
+              "
+            >
+              Reset
+            </button>
+            <button class="green" id="submitPassBtn" onclick="submitPass()">
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="menuPopup">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="flex">
+            <div
+              class="user-info-block"
+              id="login-user-name-div_fp"
+              style="display: none"
+            >
+              <p id="login-user-name-lbl_fp"></p>
+            </div>
+
+            <button class="green" onclick="openTimeTableWindow()">
+              View My Timetable
+            </button>
+            <button class="green" onclick="openLeavesWindow()">
+              Apply Leaves
+            </button>
+            <button class="green" onclick="openAttendanceWindow()">
+              Fill Attendance
+            </button>
+            <button class="green" onclick="openExamsWindow()">
+              Submit Examination Marks
+            </button>
+            <button class="green" onclick="openGenerateHomeworkWindow()">
+              Fill Today's Work
+            </button>
+            <button class="green" onclick="openHomeworkWindow()">
+              Check Homework
+            </button>
+            <button class="green" onclick="openJapaWindow()">
+              Student Japa
+            </button>
+            <button
+              class="green"
+              id="gatePassBtn"
+              onclick="openGatePassWindow()"
+              style="display: none"
+            >
+              Student Gate Pass Approval
+            </button>
+            <button
+              class="green"
+              id="yearlyAdmissionBtn"
+              onclick="retrieveStudentSubmissions()"
+              style="display: none"
+            >
+              Yearly Admission Delivery Dashboard
+            </button>
+            <button
+              class="green"
+              id="yearlyAdmissionFinanceBtn"
+              onclick="yearlyAdmissionFinanceClick()"
+              style="display: none"
+            >
+              Yearly Kit Payment Dashboard
+            </button>
+            <button class="red" onclick="onLogoutClick()">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="pledgePopup">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="radio-container">
+            <div class="radio-heading">
+              <label for="ques" class="required" id="ques-label"></label>
+            </div>
+            <div class="radio-content">
+              <div class="options">
+                <input
+                  type="radio"
+                  id="ques-yes"
+                  name="ques"
+                  value="Yes"
+                  class="custom-radio required"
+                />
+                <label for="ques-yes" class="custom-label">Yes</label>
+              </div>
+              <div class="options">
+                <input
+                  type="radio"
+                  id="ques-no"
+                  name="ques"
+                  value="No"
+                  class="custom-radio"
+                />
+                <label for="ques-no" class="custom-label">No</label>
+              </div>
+            </div>
+            <div class="error" id="quesError"></div>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              id="nextBtn"
+              disabled
+              onclick="SHOW_SPECIFIC_DIV('attendanceContainer')"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="attendanceContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="controlRow">
+            <label class="width30" for="class">Class</label>
+            <select class="width70" id="class">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width30" for="subject">Subject</label>
+            <select class="width70" id="subject">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('pledgePopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="goToStudentContainer()"
+              id="attendanceNext"
+              disabled
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="stdAttendanceContainer">
+        <div class="popup-content scrollable-content button-row-end-relative">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="selectStudentsHeading_div"
+            style="display: none"
+          >
+            <p id="selectStudentsHeading_lbl"></p>
+          </div>
+          <div class="radio-container" id="pledgeContainer" >
+            <div class="radio-heading-student">
+              <label class="required">Pledge</label>
+            </div>
+            <div class="radio-content-without-flex">
+              <div class="options">
+                <input
+                  type="checkbox"
+                  id="ct-pledge"
+                  name="mcqPledge"
+                  value="Yes"
+                  class="custom-checkbox"
+                />
+                <label
+                  for="ct-pledge"
+                  class="custom-label-student"
+                  id="ct-pledge-label"
+                >
+                  I will take Class Test Today!
+                </label>
+                <input
+                  type="checkbox"
+                  id="language-pledge"
+                  name="languagePledge"
+                  value="Yes"
+                  class="custom-checkbox"
+                />
+                <label
+                  for="language-pledge"
+                  class="custom-label-student"
+                  id="language-pledge-label"
+                >
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="radio-container">
+            <div class="radio-heading-student">
+              <label for="student-list" class="required">Student List</label>
+            </div>
+            <div class="radio-content-without-flex" id="dynamic-student-list">
+              <!-- Students will be inserted here -->
+            </div>
+          </div>
+
+          <div id="markAttendanceDiv" class="button-row">
+            <button
+              class="red"
+              onclick="SHOW_SPECIFIC_DIV('attendanceContainer')"
+            >
+              Back
+            </button>
+            <button class="green" onclick="markAttendanceClick()" id="mark_attendance_button">
+              Mark Attendance
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="studentsJapaContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <h2>Students' Timers</h2>
+          <div class="button-row">
+            <button
+              class="bulbgreenDisabled"
+              id="toggleAllBtn"
+              onclick="startAllTimers()"
+            >
+              Start All
+            </button>
+          </div>
+          <div id="studentsJapaWindow"></div>
+          <div class="button-row">
+            <button class="green" onclick="saveGGJapaData()">Submit</button>
+          </div>
+        </div>
+      </div>
+      <div class="popup" id="classDataMainContainer">
+        <div class="popup-content scrollable-content">
+          <div id="classDataContainer"></div>
+          <div class="button-row">
+            <button class="green" id="homePage" onclick="homePageClick()">
+              Home
+            </button>
+            <button
+              class="purple"
+              id="downloadJapaReport"
+              onclick="downloadJapaReportClick()"
+            >
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adding the containers for Exam Marks Submission -->
+      <div class="popup" id="classTestPopup">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="radio-container">
+            <div class="radio-heading">
+              <label
+                for="ctques"
+                class="required"
+                id="ct-question-label"
+              ></label>
+            </div>
+            <div class="radio-content">
+              <div class="options">
+                <input
+                  type="radio"
+                  id="ct-ques-yes"
+                  name="ctques"
+                  value="Yes"
+                  class="custom-radio required"
+                />
+                <label for="ques-yes" class="custom-label">Yes</label>
+              </div>
+              <div class="options">
+                <input
+                  type="radio"
+                  id="ct-ques-no"
+                  name="ctques"
+                  value="No"
+                  class="custom-radio"
+                />
+                <label for="ques-no" class="custom-label">No</label>
+              </div>
+            </div>
+            <div class="error" id="ErrClassTestQuestion"></div>
+            <textarea
+              id="ctReason"
+              rows="3"
+              placeholder="Please enter a valid reason for not taking the class test."
+              required
+            ></textarea>
+            <div class="error" id="ErrctReason"></div>
+          </div>
+
+          <div class="button-row">
+            <button class="red" onclick="openExamsWindow()">Back</button>
+            <button class="green" onclick="goNextFromCt()">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="examContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="controlRow">
+            <label class="width20" for="examclass">Class</label>
+            <select class="width80" id="examclass">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="examsubject">Subject</label>
+            <select class="width80" id="examsubject">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="pendingexam">Exam</label>
+            <select class="width80" id="pendingexam">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="checkSelectedTest()"
+              disabled
+              id="examNext"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="raiseHWContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="controlRow">
+            <label class="width20" for="raiseHWclass">Class</label>
+            <select class="width80" id="raiseHWclass">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="raiseHWsubject">Subject</label>
+            <select class="width80" id="raiseHWsubject">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="showLPWindow()"
+              disabled
+              id="raiseHWNext"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="selectLPContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="selectLPHeading_div"
+            style="display: none"
+          >
+            <p id="selectLPHeading_lbl"></p>
+          </div>
+
+          <div class="radio-content-custom-box" id="selectLPRadio">
+            <div class="radio-heading-student">
+              <label class="required">Choose an option</label>
+            </div>
+
+            <div class="radio-content-without-flex" id="dynamic-lp-list"></div>
+          </div>
+
+          <div class="button-row">
+            <button class="purple" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Home
+            </button>
+            <button class="red" onclick="openGenerateHomeworkWindow()">
+              Back
+            </button>
+            <button class="green" id="nextButtonLP" onclick="" disabled>
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="selectHWContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="selectHWHeading_div"
+            style="display: none"
+          >
+            <p id="selectHWHeading_lbl"></p>
+          </div>
+          <div id="selectHWWindow"></div>
+          <div class="button-row">
+            <button
+              class="red"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Do you want to reset form?',
+                  resetExamForm,
+                );
+                document.getElementById('submitButtonLP').disabled = true;
+              "
+            >
+              Reset
+            </button>
+            <button class="purple" onclick="showLPWindow()">Back</button>
+            <button class="green" id="submitButtonLP" disabled>Submit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="selectCheckHWContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="selectCheckHWHeading_div"
+            style="display: none"
+          >
+            <p id="selectCheckHWHeading_lbl"></p>
+          </div>
+          <div id="selectCheckHWWindow"></div>
+          <div class="button-row">
+            <button class="purple" onclick="openHomeworkWindow()">Back</button>
+            <button
+              class="red"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Do you want to reset form?',
+                  resetExamForm,
+                );
+                document.getElementById('submitButtonCheckHW').disabled = true;
+              "
+            >
+              Reset
+            </button>
+            <button class="green" id="submitButtonCheckHW" disabled>
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="checkHWContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="controlRow">
+            <label class="width20" for="checkHWclass">Class</label>
+            <select class="width80" id="checkHWclass">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="checkHWsubject">Subject</label>
+            <select class="width80" id="checkHWsubject">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="showHWCheckWindow()"
+              disabled
+              id="checkHWNext"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="verificationGridPopup">
+        <div
+          class="popup-content scrollable-content"
+          id="verificationGridSubPopup"
+        >
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="verifyDetailsHeading_div"
+            style="display: none"
+          >
+            <p id="verifyDetailsHeading_lbl"></p>
+          </div>
+          <div class="heading" id="gridHeading">Verify Details</div>
+          <div class="button-row">
+            <button class="red" id="verificationBackButton">Back</button>
+            <button class="green" id="verificationSubmitBtn">Submit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="examMarksContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div
+            class="user-info-block"
+            id="examFormHeading_div"
+            style="display: none"
+          >
+            <p id="examFormHeading_lbl"></p>
+          </div>
+          <div id="studentsMarksWindow"></div>
+          <div class="button-row">
+            <button
+              class="red"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Do you want to reset form?',
+                  resetExamForm,
+                )
+              "
+            >
+              Reset
+            </button>
+            <button class="purple" onclick="checkSelectedTest(1)">Back</button>
+            <button class="green" onclick="validateExamForm()">Submit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" style="display: none" id="teacherLeavesContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <h2>Apply Leave(s)</h2>
+          <div
+            class="user-info-block"
+            id="teacherLeavesHeading_div"
+            style="display: none"
+          >
+            <p id="teacherLeavesHeading_lbl"></p>
+          </div>
+
+          <form id="teacherLeavesForm">
+            <label class="required">Start Date</label>
+            <input type="date" id="startdate" required />
+            <div class="error" id="startdateError"></div>
+
+            <label>End Date</label>
+            <input type="date" id="enddate" required />
+            <div class="error" id="enddateError"></div>
+
+            <label class="required">Class-Subject(s)</label>
+            <div id="classSubject"></div>
+            <div class="error" id="classSubjectError"></div>
+
+            <label class="required">Reason for Leave(s)</label>
+            <textarea
+              id="leaveReason"
+              rows="3"
+              placeholder="Please enter atleast 15 characters!"
+              required
+              minlength="15"
+              disabled
+            ></textarea>
+            <div class="error" id="leaveReasonError"></div>
+          </form>
+
+          <div class="button-row">
+            <button
+              class="purple"
+              onclick="
+                resetLeaveForm();
+                SHOW_SPECIFIC_DIV('menuPopup');
+              "
+            >
+              Home
+            </button>
+            <button class="red" onclick="resetLeaveForm(1)">Reset</button>
+            <button class="green" id="leavesPassBtn" onclick="">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" style="display: none" id="gatePassContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <h2>Gate Pass Management</h2>
+          <div
+            class="user-info-block"
+            id="gatePassHeading_div"
+            style="display: none"
+          >
+            <p id="gatePassHeading_lbl"></p>
+          </div>
+
+          <div id="gatePassWindow"></div>
+
+          <div class="button-row">
+            <button
+              class="purple"
+              onclick="
+                resetExamForm();
+                SHOW_SPECIFIC_DIV('menuPopup');
+              "
+            >
+              Back
+            </button>
+            <button
+              class="red"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Do you want to reset form?',
+                  resetExamForm,
+                );
+                document.getElementById('gatePassNextBtn').disabled = true;
+              "
+            >
+              Reset
+            </button>
+            <button class="green" id="gatePassNextBtn" onclick="" disabled>
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adding container for japa only option -->
+      <div class="popup" id="attendanceForJapaContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="controlRow">
+            <label class="width30" for="classForJapa">Class</label>
+            <select class="width70" id="classForJapa">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="SHOW_SPECIFIC_DIV('stdAttendanceForJapaContainer')"
+              id="attendanceForJapaNext"
+              disabled
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="stdAttendanceForJapaContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="radio-container-student">
+            <div class="radio-heading-student">
+              <label for="student-list" class="required">Student List</label>
+            </div>
+            <div
+              class="radio-content-without-flex"
+              id="dynamic-student-list-japa"
+            >
+              <!-- Students will be inserted here -->
+            </div>
+          </div>
+          <div class="error" id="ErrStudentForJapa"></div>
+
+          <div id="markAttendanceForJapaDiv" class="button-row">
+            <button
+              class="red"
+              onclick="SHOW_SPECIFIC_DIV('attendanceForJapaContainer')"
+            >
+              Back
+            </button>
+            <button class="green" onclick="markAttendanceforJapaClick()">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="yearlyAdmissionKitPopup">
+        <div class="popup-content scrollable-content">
+          <div id="deliveryApp" class="delivery-app">
+            <div class="checkout-summary-header">
+              Student Admission Kit Delivery System
+            </div>
+            <div>
+              <button class="red" onclick="backFromYearlyAdmissionKit()">
+                Back
+              </button>
+            </div>
+            <div class="search-wrapper">
+              <input
+                id="studentSearch"
+                placeholder="Search student..."
+                oninput="handleSearchInput()"
+                autocomplete="off"
+              />
+              <span class="search-clear" onclick="clearSearch()">✕</span>
+            </div>
+
+            <div id="studentContainer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="popup" id="studentPreviewContainerPopup">
+        <div class="popup-content scrollable-content">
+          <div id="StdYearlyEntry"></div>
+          <div id="studentPreviewContainer"></div>
+        </div>
+      </div>
+
+      <div class="popup" id="yearlyAdmissionKitFinancePopup">
+        <div class="popup-content scrollable-content">
+          <div class="delivery-app">
+            <div class="checkout-summary-header">
+              Student Admission Payment Recd System
+            </div>
+
+            <div>
+              <button class="red" onclick="backFromYearlyAdmissionKit()">
+                Back
+              </button>
+            </div>
+
+            <div class="search-wrapper">
+              <input
+                id="studentSearchFinance"
+                placeholder="Search student..."
+                oninput="renderStudentsFinance()"
+                autocomplete="off"
+              />
+              <span class="search-clear" onclick="clearSearchFinance()">✕</span>
+            </div>
+
+            <div id="studentContainerFinance"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="ScriptCommon.js"></script>
+    <script src="ScriptConstants.js"></script>
+    <script src="ScriptYearlyAdmissionKit.js"></script>
+    <script src="ScriptYearlyAdmissionFinanceModule.js"></script>
+    <script src="Script.js"></script>
+    <script src="ScriptAttendance.js"></script>
+    <script src="ScriptHomeworkSubmission.js"></script>
+    <script src="ScriptHomeworkChecking.js"></script>
+    <script src="ScriptLeaves.js"></script>
+    <script src="ScriptGatePass.js"></script>
+  </body>
+</html>
