@@ -483,7 +483,7 @@ async function openAttendanceWindow() {
   //28.657501589771897, 77.43753484576277
   const schoolLat = 28.657501589771897;   // your school latitude
   const schoolLng = 77.43753484576277;   // your school longitude
-  const allowedRadius = 25;   // meters
+  const allowedRadius = 50;   // meters
 
   let school_end_time = "15:00";
   let [h, m] = school_end_time.split(":").map(Number);
@@ -506,7 +506,7 @@ async function openAttendanceWindow() {
     const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
 
     if (result !== 1) {
-      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition:(${result.split("_")[0].substring(0,7)},${result.split("_")[1].substring(0,7)})\n\nDistance:${result.split("_")[2]}m`);
+      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition:(${result.split("_")[0].substring(0,7)},${result.split("_")[1].substring(0,7)})\n\nDistance:${result.split("_")[2].substring(0,5)}m`);
       return; // ✅ NOW this works as expected
     }
 
