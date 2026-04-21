@@ -1562,7 +1562,7 @@ function checkLocation(inputLat, inputLong, allowedRadius) {
         console.log(`Current location: ${latitude}, ${longitude}`);
 
         const distance = getDistance(latitude, longitude, inputLat, inputLong);
-        resolve(distance <= allowedRadius ? 1 : 0);
+        resolve(distance <= allowedRadius ? 1 : latitude+"_"+longitude);
       },
       (error) => {
         console.error("Geolocation error:", error.message);
