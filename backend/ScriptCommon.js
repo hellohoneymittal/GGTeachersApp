@@ -1562,7 +1562,15 @@ function checkLocation(inputLat, inputLong, allowedRadius) {
         const distance = getDistance(latitude, longitude, inputLat, inputLong);
         //SHOW_INFO_POPUP(`Current location: ${latitude}, ${longitude}, Distance: ${distance}`);
         console.log(`Current location: ${latitude}, ${longitude}, Distance: ${distance}`)
-        resolve(distance <= allowedRadius ? 1 : latitude+"_"+longitude+"_"+distance);
+
+        let formattedDistance;
+
+        if (distance >= 1000)
+          formattedDistance = (Number(distance) / 1000).toFixed(2) + " km";
+        else
+          formattedDistance = Number(distance).toFixed(2) + " m";
+
+        resolve(distance <= allowedRadius ? 1 : latitude+"_"+longitude+"_"+formattedDistance);
       },
       (error) => {
         console.error("Geolocation error:", error.message);

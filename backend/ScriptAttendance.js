@@ -506,7 +506,7 @@ async function openAttendanceWindow() {
     const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
 
     if (result !== 1) {
-      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition:(${result.split("_")[0].substring(0,7)},${result.split("_")[1].substring(0,7)})\n\nDistance:${result.split("_")[2].substring(0,5)}m`);
+      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition:(${result.split("_")[0].substring(0,7)},${result.split("_")[1].substring(0,7)})\n\nDistance:${result.split("_")[2]}`);
       return; // ✅ NOW this works as expected
     }
 
