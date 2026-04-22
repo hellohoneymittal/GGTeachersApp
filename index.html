@@ -4,12 +4,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" sizes="32x32" href="backend/favicon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="backend/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png" />
     <title>Gaurang Gurukul Teacher's App</title>
 
-    <link rel="stylesheet" href="backend/StylesCommon.css" />
-    <link rel="stylesheet" href="backend/StylesYearlyAdmissionKitSpecific.css" />
+    <link rel="stylesheet" href="StylesCommon.css" />
+    <link rel="stylesheet" href="StylesYearlyAdmissionKitSpecific.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -289,7 +289,7 @@
           >
             <p id="selectStudentsHeading_lbl"></p>
           </div>
-          <div class="radio-container" id="pledgeContainer" >
+          <div class="radio-container" id="pledgeContainer">
             <div class="radio-heading-student">
               <label class="required">Pledge</label>
             </div>
@@ -342,7 +342,11 @@
             >
               Back
             </button>
-            <button class="green" onclick="markAttendanceClick()" id="mark_attendance_button">
+            <button
+              class="green"
+              onclick="markAttendanceClick()"
+              id="mark_attendance_button"
+            >
               Mark Attendance
             </button>
           </div>
@@ -367,7 +371,14 @@
           </div>
           <div id="studentsJapaWindow"></div>
           <div class="button-row">
-            <button class="green" onclick="saveGGJapaData()" disabled id="japaSubmitButton">Submit</button>
+            <button
+              class="green"
+              onclick="saveGGJapaData()"
+              disabled
+              id="japaSubmitButton"
+            >
+              Submit
+            </button>
           </div>
         </div>
       </div>
@@ -938,15 +949,15 @@
       </div>
     </div>
 
-    <script src="backend/ScriptConstants.js"></script>
-    <script src="backend/ScriptCommon.js"></script>
-    <script src="backend/Script.js"></script>
-    <script src="backend/ScriptYearlyAdmissionKit.js"></script>
-    <script src="backend/ScriptYearlyAdmissionFinanceModule.js"></script>
-    <script src="backend/ScriptAttendance.js"></script>
-    <script src="backend/ScriptHomeworkSubmission.js"></script>
-    <script src="backend/ScriptHomeworkChecking.js"></script>
-    <script src="backend/ScriptLeaves.js"></script>
-    <script src="backend/ScriptGatePass.js"></script>
+    <script src="ScriptConstants.js"></script>
+    <script src="ScriptCommon.js"></script>
+    <script src="Script.js"></script>
+    <script src="ScriptYearlyAdmissionKit.js"></script>
+    <script src="ScriptYearlyAdmissionFinanceModule.js"></script>
+    <script src="ScriptAttendance.js"></script>
+    <script src="ScriptHomeworkSubmission.js"></script>
+    <script src="ScriptHomeworkChecking.js"></script>
+    <script src="ScriptLeaves.js"></script>
+    <script src="ScriptGatePass.js"></script>
   </body>
 </html>
