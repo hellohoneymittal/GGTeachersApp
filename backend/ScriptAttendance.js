@@ -490,6 +490,7 @@ async function openAttendanceWindow() {
   let endMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
+  let ignoreTeachers = ["Aravinda Nimai Prabhuji"]
 
   if (now.getDay() === 0) {
     SHOW_INFO_POPUP("Cannot mark attendance on a Sunday!");
@@ -505,7 +506,7 @@ async function openAttendanceWindow() {
   try{
     const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
 
-    if (result !== 1) {
+    if (!ignoreTeachers.includes(selectedTeacher) && result !== 1) {
       SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition: ${result.split("_")[0]}\n\nDistance: ${result.split("_")[1]}`);
       return; // ✅ NOW this works as expected
     }
