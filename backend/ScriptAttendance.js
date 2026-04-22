@@ -518,8 +518,8 @@ async function openAttendanceWindow() {
       return;
     }
 
-    if (!ignoreTeachers.includes(selectedTeacher) && result !== 1) {
-      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition: ${result.split("_")[0]}\n\nDistance: ${result.split("_")[1]}`);
+    if (result !== 1) {
+      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nDistance: ${result}`);
       return; // ✅ NOW this works as expected
     }
 
