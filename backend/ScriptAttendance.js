@@ -493,7 +493,7 @@ async function openAttendanceWindow() {
   let endMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = ["Aravinda Nimai Prabhuji","Amani Nitai Prabhuji"]
+  let ignoreTeachers = ["Aravinda Nimai Prabhuji"]
   let result = 0;
 
   if (now.getDay() === 0) {
