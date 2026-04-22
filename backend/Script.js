@@ -903,8 +903,6 @@ function resetJapaFormFields() {
   const mainBtn = document.getElementById("toggleAllBtn");
   mainBtn.textContent = "Start All";
   updateTimerColor("greenDisabled", mainBtn);
-
-  document.getElementById("chapterRadioContainer").innerHTML = "";
 }
 
 async function goToStudentContainer() {
@@ -990,116 +988,6 @@ function onChapterSelect(event) {
   if (selectedDiv) {
     selectedDiv.style.display = "block";
   }
-
-  document
-    .querySelectorAll("#chapterRadioContainer input[name='chapter']")
-    .forEach((radio) => {
-      radio.addEventListener("change", function () {
-        document
-          .querySelectorAll("#chapterRadioContainer input[type='checkbox']")
-          .forEach((cb) => {
-            cb.checked = false;
-          });
-      });
-    });
-}
-
-function renderLSTHTML(data = lstResponseData) {
-  // Group data by chapter
-  const chapters = {};
-  data.forEach(([chapter, category, description]) => {
-    if (!chapters[chapter]) chapters[chapter] = [];
-    chapters[chapter].push({ category, description });
-  });
-
-  const container = document.getElementById("chapterRadioContainer");
-  container.innerHTML = `
-    <div class="radio-heading-student">
-      <label class="required">Select Chapter</label>
-    </div>
-    <div id="chapter-options">
-      <div class="options marginLeft5">
-        <input
-          type="radio"
-          id="chapter-revision"
-          name="chapter"
-          value="Revision"
-          onclick="onChapterSelect(this)"
-        />
-        <label class="radio-label" for="chapter-revision">Revision</label>
-      </div>
-      <div class="options marginLeft5">
-        <input
-          type="radio"
-          id="chapter-test"
-          name="chapter"
-          value="Class Test"
-          onclick="onChapterSelect(this)"
-        />
-        <label class="radio-label" for="chapter-test">Class Test</label>
-      </div>
-      <div class="options marginLeft5">
-        <input
-          type="radio"
-          id="chapter-lst"
-          name="chapter"
-          value="LST"
-          onclick="onChapterSelect(this)"
-        />
-        <label class="radio-label" for="chapter-lst">LST</label>
-      </div>
-      <div class="options marginLeft5" >
-        <input
-          type="radio"
-          id="chapter-na"
-          name="chapter"
-          value="Not Applicable"
-          onclick="onChapterSelect(this)"
-        />
-        <label class="radio-label-student" for="chapter-na">Not Applicable</label>
-      </div>
-    </div>
-  `;
-
-  const optionsDiv = container.querySelector("#chapter-options");
-
-  // Ab dynamic LST chapters ko append karte hain "Not Applicable" ke baad
-  Object.entries(chapters).forEach(([chapter, tasks], idx) => {
-    const radioId = `chapter-dyn-${idx}`;
-    let html = `
-      <div class="options marginLeft5">
-        <input type="radio" id="${radioId}" name="chapter" value="${escapeHtml(
-          chapter,
-        )}" onclick="onChapterSelect(this)"/>
-        <label class="radio-label-student" for="${radioId}">${chapter}</label>
-      </div>
-      <div class="chapter-tasks" id="${radioId}-tasks" style="margin-left:20px; display:none;">
-    `;
-
-    tasks.forEach((t, j) => {
-      const cbId = `${radioId}-task-${j}`;
-      html += `
-        <div class="radio-content">
-          <div class="options-ChkBox">
-            <input
-              type="checkbox"
-              id="${cbId}"
-              name="${radioId}Tasks"
-              value="${t.category}: ${t.description}"
-              class="custom-checkbox required"
-            />
-            <label for="${cbId}" class="custom-label-ChkBox">
-              ${t.category} : ${t.description}
-            </label>
-          </div>
-        </div>
-      `;
-    });
-
-    html += `</div>`;
-
-    optionsDiv.insertAdjacentHTML("beforeend", html);
-  });
 }
 
 function escapeHtml(str) {
@@ -1144,6 +1032,8 @@ function startAllTimers() {
     mainBtn.textContent = "Pause All";
     updateTimerColor("", mainBtn);
   }
+
+  document.getElementById("japaSubmitButton").disabled = false;
 }
 
 function getSelectedStudents(name) {
@@ -1173,37 +1063,6 @@ async function markAttendanceClick() {
 }
 
 async function callMarkAttendanceClick() {
-  // const selectedChapter = document.querySelector(
-  //   "#chapterRadioContainer input[name='chapter']:checked",
-  // );
-  // if (selectedStudentsArr.length > 0 && !selectedChapter) {
-  //   SHOW_ERROR_POPUP("Please select a chapter option.");
-  //   return;
-  // }
-
-  // const chapterId = selectedChapter.id;
-  // const chapterValue = selectedChapter.value;
-
-  // // अगर उसके अंदर checkboxes हैं → कौन से select हुए?
-  // const taskContainer = document.getElementById(`${chapterId}-tasks`);
-  // let selectedTasks = [];
-
-  // if (taskContainer) {
-  //   selectedTasks = Array.from(
-  //     taskContainer.querySelectorAll("input[type='checkbox']:checked"),
-  //   ).map((cb) => cb.value);
-  // }
-
-  // // Lesson Plan format → Chapter : Task (हर line अलग)
-  // let lessonPlanLines = [];
-  // if (selectedTasks.length > 0) {
-  //   lessonPlanLines = selectedTasks.map((t) => `${chapterValue}$${t}`);
-  // } else {
-  //   lessonPlanLines.push(`${chapterValue}`); // अगर कोई task select नहीं है
-  // }
-
-  // const lessonPlanStr = lessonPlanLines.join("\n");
-
   // Attendance details format → हर student line by line
   const attendanceStr = selectedStudentsArr.join("\n");
   const separatedStudentList = studentListArr.join("\n");

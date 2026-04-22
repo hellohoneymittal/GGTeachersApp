@@ -357,6 +357,8 @@ function populateSubjectDropdown(selectedClass) {
 }
 
 function showJapaWindow() {
+  let japaSubButton = document.getElementById("japaSubmitButton");
+  japaSubButton.disabled = true;
   SHOW_SPECIFIC_DIV("studentsJapaContainer");
   const container = document.getElementById("studentsJapaWindow");
   container.innerHTML = ""; // Clear old UI
@@ -422,6 +424,7 @@ function showJapaWindow() {
 
     // --- START/PAUSE/RESUME ---
     startBtn.addEventListener("click", () => {
+      japaSubButton.disabled = false;
       if (!timerIntervalGG) {
         startTime = Date.now();
         timerIntervalGG = setInterval(updateDisplay, 10);
@@ -490,7 +493,8 @@ async function openAttendanceWindow() {
   let endMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = ["Aravinda Nimai Prabhuji"]
+  let ignoreTeachers = ["Aravinda Nimai Prabhuji","Amani Nitai Prabhuji"]
+  let result = 0;
 
   if (now.getDay() === 0) {
     SHOW_INFO_POPUP("Cannot mark attendance on a Sunday!");
@@ -503,58 +507,61 @@ async function openAttendanceWindow() {
   }
 
   //Check current location
-  try{
-    const result = await checkLocation(schoolLat, schoolLng, allowedRadius);
+  if(!ignoreTeachers.includes(selectedTeacher)){
+    try{
+      result = await checkLocation(schoolLat, schoolLng, allowedRadius);
+    }
+    catch (error) {
+      console.error(error);
+      if(error.message)
+        SHOW_ERROR_POPUP(`ERROR: ${error.message}`);
+      return;
+    }
 
-    if (!ignoreTeachers.includes(selectedTeacher) && result !== 1) {
+    if (result !== 1) {
       SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nPosition: ${result.split("_")[0]}\n\nDistance: ${result.split("_")[1]}`);
       return; // ✅ NOW this works as expected
     }
 
     console.log(`Inside Gurukul!`)
+  }
 
-    const outputData = await CALL_API(
-      API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
-      selectedTeacher,
-    );
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
+    selectedTeacher,
+  );
 
-    if (outputData?.status && outputData.response) {
-      if (
-        typeof outputData.response === "string" &&
-        outputData.response.includes("ERR")
-      ) {
-        SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
-        return;
-      }
-
-      if (Object.keys(outputData.response.data).length == 0) {
-        SHOW_INFO_POPUP("No classes scheduled for today!");
-        return;
-      }
-
-      ctResponse = outputData.response.cTResponse;
-      classSubList = outputData.response.data;
-      populateClassDropdown();
-    } else {
-      SHOW_ERROR_POPUP(
-        "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
-      );
+  if (outputData?.status && outputData.response) {
+    if (
+      typeof outputData.response === "string" &&
+      outputData.response.includes("ERR")
+    ) {
+      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
       return;
     }
 
-    //Resetting the next page
+    if (Object.keys(outputData.response.data).length == 0) {
+      SHOW_INFO_POPUP("No classes scheduled for today!");
+      return;
+    }
 
-    document.getElementById("nextBtn").disabled = true;
-
-    document.querySelectorAll('input[name="ques"]').forEach((el) => {
-      el.checked = false;
-    });
-
-    SHOW_SPECIFIC_DIV("pledgePopup");
+    ctResponse = outputData.response.cTResponse;
+    classSubList = outputData.response.data;
+    populateClassDropdown();
+  } else {
+    SHOW_ERROR_POPUP(
+      "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
+    );
+    return;
   }
-  catch (error) {
-    console.error(error);
-    if(error.message)
-      SHOW_ERROR_POPUP(`ERROR: ${error.message}`);
-  }
+
+  //Resetting the next page
+
+  document.getElementById("nextBtn").disabled = true;
+
+  document.querySelectorAll('input[name="ques"]').forEach((el) => {
+    el.checked = false;
+  });
+
+  SHOW_SPECIFIC_DIV("pledgePopup");
 }
