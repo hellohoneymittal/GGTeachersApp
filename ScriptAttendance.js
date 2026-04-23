@@ -44,8 +44,10 @@ const questions = [
     q: "Do I create a respectful environment?",
     correct: "Yes",
   },
-  {q: "Is the average homework duration more than 30 minutes?",
-    correct: "No",},
+  {
+    q: "Is the average homework duration more than 30 minutes?",
+    correct: "No",
+  },
   { q: "Do you check unit test papers within 3 days?", correct: "Yes" },
   {
     q: "Am I NOT focussing on children while they are chanting?",
@@ -155,8 +157,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkboxes = pledgeContainer.querySelectorAll(".custom-checkbox");
 
     const allChecked = Array.from(checkboxes)
-      .filter(cb => isVisible(cb))
-      .every(cb => cb.checked);
+      .filter((cb) => isVisible(cb))
+      .every((cb) => cb.checked);
 
     submitBtn.disabled = !allChecked;
   }
@@ -276,7 +278,7 @@ function getTodaysQuestion() {
 // Function to populate the class dropdown
 function populateClassDropdown() {
   const classDropdown = document.getElementById("class");
-  const subDropdown = document.getElementById("subject")
+  const subDropdown = document.getElementById("subject");
   classDropdown.innerHTML = ""; // Clear existing classes
 
   subDropdown.innerHTML = "";
@@ -484,46 +486,50 @@ function showJapaWindow() {
 
 async function openAttendanceWindow() {
   //28.657501589771897, 77.43753484576277
-  const schoolLat = 28.657501589771897;   // your school latitude
-  const schoolLng = 77.43753484576277;   // your school longitude
-  const allowedRadius = 50;   // meters
+  const schoolLat = 28.657501589771897; // your school latitude
+  const schoolLng = 77.43753484576277; // your school longitude
+  const allowedRadius = 50; // meters
 
-  let school_end_time = "15:00";
+  let school_end_time = "14:35";
+  let school_start_time = "06:50";
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
+  [h, m] = school_start_time.split(":").map(Number);
+  let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = ["Aravinda Nimai Prabhuji"]
+  let ignoreTeachers = ["Aravinda Nimai Prabhuji"];
   let result = 0;
 
   if (now.getDay() === 0) {
-    SHOW_INFO_POPUP("Cannot mark attendance on a Sunday!");
+    SHOW_INFO_POPUP("⚠️ Cannot mark attendance on a Sunday!");
     return;
   }
 
-  if (currentMinutes > endMinutes) {
-    SHOW_INFO_POPUP("School Time over for Today! Cannot mark attendance!");
+  if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
+    SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
     return;
   }
 
   //Check current location
-  if(!ignoreTeachers.includes(selectedTeacher)){
-    try{
+  if (!ignoreTeachers.includes(selectedTeacher)) {
+    try {
       result = await checkLocation(schoolLat, schoolLng, allowedRadius);
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
-      if(error.message)
-        SHOW_ERROR_POPUP(`ERROR: ${error.message}`);
+      if (error.message)
+        SHOW_ERROR_POPUP(`❌ Action Disallowed ❌\n\nERROR: ${error.message}`);
       return;
     }
 
     if (result !== 1) {
-      SHOW_ERROR_POPUP(`Outside Gurukul campus ❌\n\nDistance: ${result}`);
+      SHOW_ERROR_POPUP(
+        `❌ Action Disallowed ❌\n\n⚠️ You are ${result} away from Gurukul.\n\nAttendance can only be marked within the school campus.`,
+      );
       return; // ✅ NOW this works as expected
     }
 
-    console.log(`Inside Gurukul!`)
+    console.log(`Inside Gurukul!`);
   }
 
   const outputData = await CALL_API(
