@@ -1,4 +1,5 @@
 let classSubList = {};
+let japaFlag = 0;
 let pendingExamList = {};
 let japaClassList = {};
 let japaStudentArr = [];
@@ -592,20 +593,25 @@ function showMarksWindow() {
   });
 }
 
-async function openJapaWindow() {
-  let school_end_time = "15:00";
+async function openJapaWindow(in_flag = 0) {
+  japaFlag = in_flag;
+  let school_end_time = "14:40";
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   if (currentMinutes > endMinutes) {
-    SHOW_INFO_POPUP("School Time over for Today! Cannot start Japa!");
+    in_flag == 0
+      ? SHOW_INFO_POPUP("School Time over for Today! Cannot start Japa!")
+      : SHOW_INFO_POPUP("Cannot mark attendance as school time is over!");
     return;
   }
 
   if (now.getDay() === 0) {
-    SHOW_INFO_POPUP("Cannot start student Japa on a Sunday!");
+    in_flag == 0
+      ? SHOW_INFO_POPUP("Cannot start student Japa on a Sunday!")
+      : SHOW_INFO_POPUP("Cannot mark attendance on a Sunday!");
     return;
   }
 
@@ -613,7 +619,7 @@ async function openJapaWindow() {
 
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.GET_CLASS_STUDENTS_MAP,
-    selectedTeacher,
+    in_flag,
   );
   if (outputData?.status && outputData.response) {
     if (
@@ -625,14 +631,19 @@ async function openJapaWindow() {
     }
 
     if (Object.keys(outputData.response.data).length == 0) {
-      SHOW_INFO_POPUP(
-        "No classes scheduled in Gurukul for today.<br/><br/>Cannot use this utility for Japa!",
-      );
+      in_flag == 0
+        ? SHOW_INFO_POPUP(
+            "No classes scheduled in Gurukul for today.<br/><br/>Cannot use this utility for Japa!",
+          )
+        : SHOW_INFO_POPUP(
+            "No Examinations scheduled for today.<br/><br/>Cannot use this utility for Attendance!",
+          );
       return;
     }
 
     japaClassList = outputData.response.data;
     populateJapaClassDropdown();
+
     SHOW_SPECIFIC_DIV("attendanceForJapaContainer");
   } else {
     SHOW_ERROR_POPUP("Unable to fetch the student list!!");
@@ -1050,7 +1061,8 @@ async function markAttendanceClick() {
   //   return;
   // }
 
-  selectedStudentsArr = getSelectedStudents("studentList");
+  if (japaFlag == 0) selectedStudentsArr = getSelectedStudents("studentList");
+
   if (!Array.isArray(selectedStudentsArr) || selectedStudentsArr.length === 0) {
     SHOW_CONFIRMATION_POPUP(
       "Do you wish to proceed without selecting any student?",
@@ -1063,8 +1075,10 @@ async function markAttendanceClick() {
 
 async function callMarkAttendanceClick() {
   // Attendance details format → हर student line by line
+  if (japaFlag == 1) selectedSubject = "Examination";
   const attendanceStr = selectedStudentsArr.join("\n");
-  const separatedStudentList = studentListArr.join("\n");
+  const separatedStudentList =
+    japaFlag == 0 ? studentListArr.join("\n") : japaStudentArr.join("\n");
   const apiPayload = {
     selectedClass,
     selectedSubject,
@@ -1081,7 +1095,7 @@ async function callMarkAttendanceClick() {
 
   if (outputData?.status) {
     SHOW_SUCCESS_POPUP("Attendance marked successfully!");
-    if (selectedClass.includes("Keshava")) homePageClick();
+    if (selectedClass.includes("Keshava") || japaFlag == 1) homePageClick();
     else showJapaWindow();
   } else {
     SHOW_ERROR_POPUP("ERROR in marking attendance!\n\n" + outputData.response);
@@ -1097,7 +1111,7 @@ function markAttendanceforJapaClick() {
     return;
   } else {
     errorDiv.innerHTML = "";
-    showJapaWindow();
+    japaFlag == 0 ? showJapaWindow() : markAttendanceClick();
   }
 }
 
