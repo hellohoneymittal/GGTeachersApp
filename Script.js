@@ -700,7 +700,7 @@ async function submitPass() {
         INDEX_DB.dbName,
         INDEX_DB.storeName,
       );
-
+      loginData = outputData.response;
       renderMenus(outputData.response.name, outputData.response.role);
     } else {
       errorDiv.innerHTML = "Please enter correct password !!";
@@ -920,7 +920,7 @@ async function goToStudentContainer() {
   const submitBtn = document.getElementById("mark_attendance_button");
 
   submitBtn.disabled = true;
-  
+
   nameDiv.style.display = "block";
   nameLabel.innerHTML = `${selectedClass} : ${selectedSubject}`;
 
@@ -932,33 +932,32 @@ async function goToStudentContainer() {
   ctLabel.style.display = "none";
   ctCheckbox.checked = false;
 
-  if(selectedSubject == "English")
-  {
+  if (selectedSubject == "English") {
     languageCheckbox.style.display = "inline-block";
     languageLabel.style.display = "inline-block";
-    languageLabel.innerHTML = `I will use only English while speaking with students during the period.`
+    languageLabel.innerHTML = `I will use only English while speaking with students during the period.`;
   }
 
-  if(selectedSubject == "Hindi")
-  {
+  if (selectedSubject == "Hindi") {
     languageCheckbox.style.display = "inline-block";
     languageLabel.style.display = "inline-block";
-    languageLabel.innerHTML = `मैं कक्षा के दौरान विद्यार्थियों से केवल हिंदी में ही बात करूँगा/करूँगी।`
+    languageLabel.innerHTML = `मैं कक्षा के दौरान विद्यार्थियों से केवल हिंदी में ही बात करूँगा/करूँगी।`;
   }
 
   SHOW_SPECIFIC_DIV("stdAttendanceContainer");
 
   const pledgeDiv = document.getElementById("pledgeContainer");
 
-  if ( ctResponse[selectedClass] && ctResponse[selectedClass].includes(selectedSubject.toLowerCase()) ) {
+  if (
+    ctResponse[selectedClass] &&
+    ctResponse[selectedClass].includes(selectedSubject.toLowerCase())
+  ) {
     pledgeDiv.style.display = "inline-block"; // Show
     ctCheckbox.style.display = "inline-block";
     ctLabel.style.display = "inline-block";
-  } 
-  else if (selectedSubject == "English" || selectedSubject == "Hindi"){
+  } else if (selectedSubject == "English" || selectedSubject == "Hindi") {
     pledgeDiv.style.display = "inline-block"; // Show
-  }
-  else{
+  } else {
     pledgeDiv.style.display = "none"; // Hide
     submitBtn.disabled = false;
   }
