@@ -595,23 +595,24 @@ function showMarksWindow() {
 
 async function openJapaWindow(in_flag = 0) {
   japaFlag = in_flag;
-  let school_end_time = "14:40";
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
+  [h, m] = school_start_time.split(":").map(Number);
+  let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (currentMinutes > endMinutes) {
+  if (now.getDay() === 0) {
     in_flag == 0
-      ? SHOW_INFO_POPUP("School Time over for Today! Cannot start Japa!")
-      : SHOW_INFO_POPUP("Cannot mark attendance as school time is over!");
+      ? SHOW_INFO_POPUP("⚠️ Cannot start student Japa on a Sunday!")
+      : SHOW_INFO_POPUP("⚠️ Cannot mark attendance on a Sunday!");
     return;
   }
 
-  if (now.getDay() === 0) {
+  if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
     in_flag == 0
-      ? SHOW_INFO_POPUP("Cannot start student Japa on a Sunday!")
-      : SHOW_INFO_POPUP("Cannot mark attendance on a Sunday!");
+      ? SHOW_INFO_POPUP("⚠️ Cannot start Japa outside of school hours!")
+      : SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
     return;
   }
 
@@ -643,6 +644,7 @@ async function openJapaWindow(in_flag = 0) {
 
     japaClassList = outputData.response.data;
     populateJapaClassDropdown();
+    document.getElementById("ErrStudentForJapa").innerHTML = "";
 
     SHOW_SPECIFIC_DIV("attendanceForJapaContainer");
   } else {
@@ -804,20 +806,6 @@ function populatePendingExamDropdown(examClass, examSubject) {
 //Function to populate the class dropdown for japa only
 function populateJapaClassDropdown() {
   const classDropdown = document.getElementById("classForJapa");
-  const classNameArr = [
-    "Sri Narayana",
-    "Sri Madhava",
-    "Sri Govinda",
-    "Sri Vishnu",
-    "Sri Madhusudana",
-    "Sri Trivikrama",
-    "Sri Vamana",
-    "Sri Sridhara",
-    "Sri Hrishikesha",
-    "Sri Padmanabha",
-    "Sri Damodara",
-    "Sri Vasudeva",
-  ];
   let i;
 
   classDropdown.innerHTML = ""; // Clear existing subjects
@@ -827,16 +815,12 @@ function populateJapaClassDropdown() {
   defaultOption.textContent = "Select";
   classDropdown.appendChild(defaultOption);
 
-  for (i = 0; i < classNameArr.length; i++) {
-    if (
-      japaClassList[classNameArr[i]] == null ||
-      japaClassList[classNameArr[i]].length == 0
-    )
-      continue;
+  for (i in japaClassList) {
+    if (japaFlag == 0 && i.includes("Keshava")) continue;
 
     const option = document.createElement("option");
-    option.value = classNameArr[i];
-    option.textContent = classNameArr[i];
+    option.value = i;
+    option.textContent = i;
     classDropdown.appendChild(option);
   }
 }
