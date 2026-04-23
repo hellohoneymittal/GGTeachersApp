@@ -187,6 +187,15 @@
             >
               Yearly Kit Payment Dashboard
             </button>
+            <button
+              class="green"
+              id="splStudentEntryBtn"
+              onclick="splStudentEntryBtnClick()"
+              style="display: none"
+            >
+              Special Entry System
+            </button>
+
             <button class="red" onclick="onLogoutClick()">Logout</button>
           </div>
         </div>
@@ -913,6 +922,7 @@
           </div>
         </div>
       </div>
+
       <div class="popup" id="studentPreviewContainerPopup">
         <div class="popup-content scrollable-content">
           <div id="StdYearlyEntry"></div>
@@ -947,6 +957,98 @@
           </div>
         </div>
       </div>
+
+      <div class="popup" id="splStdEntryPopup">
+        <div class="popup-content scrollable-content">
+          <div class="refresh-button-container">
+            <button
+              class="refresh-btn-new"
+              onclick="splStdEntryPopupRefClick()"
+            >
+              <span class="refresh-text">Refresh</span>
+              <span class="refresh-icon">⟳</span>
+            </button>
+          </div>
+
+          <div class="popup-title-box"></div>
+
+          <div
+            class="dynamic-dropdown-container"
+            id="splStdEntry-dynamic-dropdown-container"
+          ></div>
+
+          <div class="extra-entry-box">
+            <button class="purple add-more-right" onclick="ADD_MORE_ROW()">
+              + Add More
+            </button>
+
+            <div class="multi-student-entry-box" id="multiStudentBox">
+              <!-- Default first row -->
+              <div class="add-more-input-row">
+                <input
+                  type="text"
+                  class="manual-student-input"
+                  placeholder="Enter Name"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!--  DURATION -->
+          <div class="reason-box">
+            <label class="reason-label">Duration :</label>
+
+            <select
+              id="specialEntryDuration"
+              class="custom-duration-dropdown"
+              onchange="HANDLE_DURATION_CHANGE(this.value)"
+            >
+              <option value="">Select Duration</option>
+              <option value="15">15 Min</option>
+              <option value="30">30 Min</option>
+              <option value="60">60 Min</option>
+              <option value="90">90 Min</option>
+              <option value="120">120 Min</option>
+              <option value="180">180 Min</option>
+            </select>
+
+            <input
+              type="text"
+              id="customDurationInput"
+              class="custom-duration-input"
+              placeholder="Enter Custom Duration"
+              style="display: none"
+            />
+          </div>
+
+          <!-- REASON -->
+
+          <div class="reason-box">
+            <label class="reason-label">Reason :</label>
+            <textarea
+              id="specialEntryReason"
+              placeholder="Enter reason here..."
+            ></textarea>
+          </div>
+
+          <div class="button-row">
+            <button
+              class="red"
+              id="splStdEntry-back"
+              onclick="splStdEntryBackBtnClick()"
+            >
+              Back
+            </button>
+            <button
+              class="green"
+              id="splStdEntry-submit"
+              onclick="splStdEntrySubClick()"
+            >
+              Proceed
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="ScriptConstants.js"></script>
@@ -959,5 +1061,6 @@
     <script src="ScriptHomeworkChecking.js"></script>
     <script src="ScriptLeaves.js"></script>
     <script src="ScriptGatePass.js"></script>
+    <script src="ScriptSplEntrySystem.js"></script>
   </body>
 </html>
