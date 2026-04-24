@@ -1,5 +1,7 @@
 let classSubList = {};
 let japaFlag = 0;
+let qpClassList = [];
+let qpTimestampMap = new Map();
 let pendingExamList = {};
 let japaClassList = {};
 let japaStudentArr = [];
@@ -1463,4 +1465,87 @@ async function openTimeTableWindow() {
     SHOW_ERROR_POPUP("Unable to fetch the timetable!!");
     return;
   }
+}
+
+async function distributeQPWindow() {
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.GET_CLASS_EXAM_SCHEDULE,
+    selectedTeacher,
+  );
+
+  if (outputData?.status && outputData.response) {
+    if (
+      typeof outputData.response === "string" &&
+      outputData.response.includes("ERR")
+    ) {
+      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+      return;
+    }
+
+    if (outputData.response.length == 0) {
+      SHOW_INFO_POPUP("No examinations scheduled in Gurukul for today");
+      return;
+    }
+
+    qpClassList = outputData.response;
+    populateStudentMultiSelectDropdown(
+      "dynamic-class-list-qp",
+      qpClassList,
+      "classList",
+    );
+
+    document.getElementById("qpSubmitBtn").disabled = true;
+    qpTimestampMap.clear();
+
+    SHOW_SPECIFIC_DIV("distributeQPContainer");
+  } else {
+    SHOW_ERROR_POPUP("Unable to fetch the examination schedule!!");
+    return;
+  }
+}
+
+document
+  .getElementById("distributeQPContainer")
+  .addEventListener("change", function (e) {
+    if (e.target.type === "checkbox") {
+      const value = e.target.value;
+      const timestamp = new Date();
+
+      if (e.target.checked) {
+        qpTimestampMap.set(value, timestamp);
+      } else {
+        qpTimestampMap.delete(value);
+      }
+
+      document.getElementById("qpSubmitBtn").disabled =
+        qpTimestampMap.size == 0;
+    }
+  });
+
+async function submitQPDistribution() {
+  const payload = Object.fromEntries(qpTimestampMap);
+
+  console.log(payload);
+
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.SUBMIT_QP_DISTRIBUTION_STATUS,
+    payload,
+  );
+
+  if (
+    outputData?.status &&
+    outputData.response &&
+    typeof outputData.response === "string"
+  ) {
+    console.log(outputData.response);
+    if (outputData.response == "ok")
+      SHOW_SUCCESS_POPUP("Response submitted Successfully!", homePageClick);
+    else
+      SHOW_ERROR_POPUP(
+        "Unable to submit response for: !!\n\n" +
+          outputData.response.split("ERR: ")[1],
+      );
+  } else SHOW_ERROR_POPUP("Unable to submit response !!");
+
+  return;
 }
