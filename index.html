@@ -154,6 +154,14 @@
             <button class="green" onclick="openJapaWindow(1)">
               Fill Attendance for Examination
             </button>
+            <button
+              class="green"
+              id="giveQPBtn"
+              onclick="distributeQPWindow()"
+              style="display: none"
+            >
+              Distribute Question Papers
+            </button>
             <button class="green" onclick="openExamsWindow()">
               Submit Examination Marks
             </button>
@@ -886,7 +894,7 @@
           </div>
           <div class="error" id="ErrStudentForJapa"></div>
 
-          <div id="markAttendanceForJapaDiv" class="button-row">
+          <div class="button-row">
             <button
               class="red"
               onclick="SHOW_SPECIFIC_DIV('attendanceForJapaContainer')"
@@ -895,6 +903,39 @@
             </button>
             <button class="green" onclick="markAttendanceforJapaClick()">
               Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="distributeQPContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="radio-container-student">
+            <div class="radio-heading-student">
+              <label for="student-list" class="required">Class List</label>
+            </div>
+            <div class="radio-content-without-flex" id="dynamic-class-list-qp">
+              <!-- Classes will be inserted here -->
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="red" onclick="homePageClick()">Back</button>
+            <button
+              class="green"
+              id="qpSubmitBtn"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Are you sure you want to submit your response?',
+                  submitQPDistribution,
+                )
+              "
+            >
+              Submit
             </button>
           </div>
         </div>
