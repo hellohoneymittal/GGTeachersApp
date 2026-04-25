@@ -1,4 +1,7 @@
 let classSubList = {};
+let japaFlag = 0;
+let qpClassList = [];
+let qpTimestampMap = new Map();
 let pendingExamList = {};
 let japaClassList = {};
 let japaStudentArr = [];
@@ -592,20 +595,26 @@ function showMarksWindow() {
   });
 }
 
-async function openJapaWindow() {
-  let school_end_time = "15:00";
+async function openJapaWindow(in_flag = 0) {
+  japaFlag = in_flag;
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
+  [h, m] = school_start_time.split(":").map(Number);
+  let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (currentMinutes > endMinutes) {
-    SHOW_INFO_POPUP("School Time over for Today! Cannot start Japa!");
+  if (now.getDay() === 0) {
+    in_flag == 0
+      ? SHOW_INFO_POPUP("⚠️ Cannot start student Japa on a Sunday!")
+      : SHOW_INFO_POPUP("⚠️ Cannot mark attendance on a Sunday!");
     return;
   }
 
-  if (now.getDay() === 0) {
-    SHOW_INFO_POPUP("Cannot start student Japa on a Sunday!");
+  if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
+    in_flag == 0
+      ? SHOW_INFO_POPUP("⚠️ Cannot start Japa outside of school hours!")
+      : SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
     return;
   }
 
@@ -613,7 +622,7 @@ async function openJapaWindow() {
 
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.GET_CLASS_STUDENTS_MAP,
-    selectedTeacher,
+    in_flag,
   );
   if (outputData?.status && outputData.response) {
     if (
@@ -625,14 +634,20 @@ async function openJapaWindow() {
     }
 
     if (Object.keys(outputData.response.data).length == 0) {
-      SHOW_INFO_POPUP(
-        "No classes scheduled in Gurukul for today.<br/><br/>Cannot use this utility for Japa!",
-      );
+      in_flag == 0
+        ? SHOW_INFO_POPUP(
+            "No classes scheduled in Gurukul for today.<br/><br/>Cannot use this utility for Japa!",
+          )
+        : SHOW_INFO_POPUP(
+            "No Examinations scheduled for today.<br/><br/>Cannot use this utility for Attendance!",
+          );
       return;
     }
 
     japaClassList = outputData.response.data;
     populateJapaClassDropdown();
+    document.getElementById("ErrStudentForJapa").innerHTML = "";
+
     SHOW_SPECIFIC_DIV("attendanceForJapaContainer");
   } else {
     SHOW_ERROR_POPUP("Unable to fetch the student list!!");
@@ -793,20 +808,6 @@ function populatePendingExamDropdown(examClass, examSubject) {
 //Function to populate the class dropdown for japa only
 function populateJapaClassDropdown() {
   const classDropdown = document.getElementById("classForJapa");
-  const classNameArr = [
-    "Sri Narayana",
-    "Sri Madhava",
-    "Sri Govinda",
-    "Sri Vishnu",
-    "Sri Madhusudana",
-    "Sri Trivikrama",
-    "Sri Vamana",
-    "Sri Sridhara",
-    "Sri Hrishikesha",
-    "Sri Padmanabha",
-    "Sri Damodara",
-    "Sri Vasudeva",
-  ];
   let i;
 
   classDropdown.innerHTML = ""; // Clear existing subjects
@@ -816,16 +817,12 @@ function populateJapaClassDropdown() {
   defaultOption.textContent = "Select";
   classDropdown.appendChild(defaultOption);
 
-  for (i = 0; i < classNameArr.length; i++) {
-    if (
-      japaClassList[classNameArr[i]] == null ||
-      japaClassList[classNameArr[i]].length == 0
-    )
-      continue;
+  for (i in japaClassList) {
+    if (japaFlag == 0 && i.includes("Keshava")) continue;
 
     const option = document.createElement("option");
-    option.value = classNameArr[i];
-    option.textContent = classNameArr[i];
+    option.value = i;
+    option.textContent = i;
     classDropdown.appendChild(option);
   }
 }
@@ -1050,7 +1047,8 @@ async function markAttendanceClick() {
   //   return;
   // }
 
-  selectedStudentsArr = getSelectedStudents("studentList");
+  if (japaFlag == 0) selectedStudentsArr = getSelectedStudents("studentList");
+
   if (!Array.isArray(selectedStudentsArr) || selectedStudentsArr.length === 0) {
     SHOW_CONFIRMATION_POPUP(
       "Do you wish to proceed without selecting any student?",
@@ -1063,8 +1061,10 @@ async function markAttendanceClick() {
 
 async function callMarkAttendanceClick() {
   // Attendance details format → हर student line by line
+  if (japaFlag == 1) selectedSubject = "Examination";
   const attendanceStr = selectedStudentsArr.join("\n");
-  const separatedStudentList = studentListArr.join("\n");
+  const separatedStudentList =
+    japaFlag == 0 ? studentListArr.join("\n") : japaStudentArr.join("\n");
   const apiPayload = {
     selectedClass,
     selectedSubject,
@@ -1081,7 +1081,7 @@ async function callMarkAttendanceClick() {
 
   if (outputData?.status) {
     SHOW_SUCCESS_POPUP("Attendance marked successfully!");
-    if (selectedClass.includes("Keshava")) homePageClick();
+    if (selectedClass.includes("Keshava") || japaFlag == 1) homePageClick();
     else showJapaWindow();
   } else {
     SHOW_ERROR_POPUP("ERROR in marking attendance!\n\n" + outputData.response);
@@ -1097,7 +1097,7 @@ function markAttendanceforJapaClick() {
     return;
   } else {
     errorDiv.innerHTML = "";
-    showJapaWindow();
+    japaFlag == 0 ? showJapaWindow() : markAttendanceClick();
   }
 }
 
@@ -1465,4 +1465,87 @@ async function openTimeTableWindow() {
     SHOW_ERROR_POPUP("Unable to fetch the timetable!!");
     return;
   }
+}
+
+async function distributeQPWindow() {
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.GET_CLASS_EXAM_SCHEDULE,
+    selectedTeacher,
+  );
+
+  if (outputData?.status && outputData.response) {
+    if (
+      typeof outputData.response === "string" &&
+      outputData.response.includes("ERR")
+    ) {
+      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+      return;
+    }
+
+    if (outputData.response.length == 0) {
+      SHOW_INFO_POPUP("No examinations scheduled in Gurukul for today");
+      return;
+    }
+
+    qpClassList = outputData.response;
+    populateStudentMultiSelectDropdown(
+      "dynamic-class-list-qp",
+      qpClassList,
+      "classList",
+    );
+
+    document.getElementById("qpSubmitBtn").disabled = true;
+    qpTimestampMap.clear();
+
+    SHOW_SPECIFIC_DIV("distributeQPContainer");
+  } else {
+    SHOW_ERROR_POPUP("Unable to fetch the examination schedule!!");
+    return;
+  }
+}
+
+document
+  .getElementById("distributeQPContainer")
+  .addEventListener("change", function (e) {
+    if (e.target.type === "checkbox") {
+      const value = e.target.value;
+      const timestamp = new Date();
+
+      if (e.target.checked) {
+        qpTimestampMap.set(value, timestamp);
+      } else {
+        qpTimestampMap.delete(value);
+      }
+
+      document.getElementById("qpSubmitBtn").disabled =
+        qpTimestampMap.size == 0;
+    }
+  });
+
+async function submitQPDistribution() {
+  const payload = Object.fromEntries(qpTimestampMap);
+
+  console.log(payload);
+
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.SUBMIT_QP_DISTRIBUTION_STATUS,
+    payload,
+  );
+
+  if (
+    outputData?.status &&
+    outputData.response &&
+    typeof outputData.response === "string"
+  ) {
+    console.log(outputData.response);
+    if (outputData.response == "ok")
+      SHOW_SUCCESS_POPUP("Response submitted Successfully!", homePageClick);
+    else
+      SHOW_ERROR_POPUP(
+        "Unable to submit response for: !!\n\n" +
+          outputData.response.split("ERR: ")[1],
+      );
+  } else SHOW_ERROR_POPUP("Unable to submit response !!");
+
+  return;
 }
