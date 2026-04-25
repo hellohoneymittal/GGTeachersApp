@@ -229,7 +229,7 @@ async function splStdEntrySubClick() {
 
     console.log("Sending:", payload);
 
-    const res = await CALL_API("SAVE_SPECIAL_ENTRY", payload);
+    const res = await CALL_API("SAVE_SPECIAL_ENTRY_REQUEST", payload);
 
     if (res?.status) {
       resetSplEntryForm();
