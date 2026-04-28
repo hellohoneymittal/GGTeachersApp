@@ -1,7 +1,7 @@
 let pendingCheckHWList = {};
-let selectedCheckHwClass = ""
-let selectedCheckHwSubject = ""
-let selectedHWStatus = {}
+let selectedCheckHwClass = "";
+let selectedCheckHwSubject = "";
+let selectedHWStatus = {};
 
 // Event listener for hw class dropdown change
 document.getElementById("checkHWclass").addEventListener("change", function () {
@@ -15,68 +15,70 @@ document.getElementById("checkHWclass").addEventListener("change", function () {
 });
 
 // Event listener for exam subject dropdown change
-document.getElementById("checkHWsubject").addEventListener("change", function () {
-  selectedCheckHwSubject = this.value.trim();
+document
+  .getElementById("checkHWsubject")
+  .addEventListener("change", function () {
+    selectedCheckHwSubject = this.value.trim();
 
-  if (selectedCheckHwClass && selectedCheckHwSubject) {
-    checkAllSelected("checkHWContainer", "checkHWNext");
-  }
-  else
-    document.getElementById("checkHWNext").disabled = true;
-});
+    if (selectedCheckHwClass && selectedCheckHwSubject) {
+      checkAllSelected("checkHWContainer", "checkHWNext");
+    } else document.getElementById("checkHWNext").disabled = true;
+  });
 
-document.getElementById("selectCheckHWContainer").addEventListener("change", function(e){
+document
+  .getElementById("selectCheckHWContainer")
+  .addEventListener("change", function (e) {
+    if (e.target.type === "radio" || e.target.type === "checkbox") {
+      toggleSubmitButton("selectCheckHWContainer", "submitButtonCheckHW");
+    }
+  });
 
-  if(e.target.type === "radio" || e.target.type === "checkbox"){
-    toggleSubmitButton("selectCheckHWContainer","submitButtonCheckHW");
-  }
-
-});
-
-function validateHWStatusSelection(){
-
-  let result = {"row_cols" : {}};
+function validateHWStatusSelection() {
+  let result = { row_cols: {} };
   let work_map = {};
-  let i
+  let i;
   const parent_container = document.getElementById("selectCheckHWContainer");
 
   const selected = parent_container.querySelectorAll(
-    `input[type="radio"]:checked`
+    `input[type="radio"]:checked`,
   );
 
-  selected.forEach(el => {
+  selected.forEach((el) => {
     const input_arr = el.id.split("_");
-    const chapter = input_arr[0]
-    const hw_title = input_arr[1] //hw_title
-    const col_num = input_arr[3] //col
-    const status = input_arr[4] //status
-    const row_num = input_arr[2] //row
-    const text = el.value //student name
+    const chapter = input_arr[0];
+    const hw_title = input_arr[1]; //hw_title
+    const col_num = input_arr[3]; //col
+    const status = input_arr[4]; //status
+    const row_num = input_arr[2]; //row
+    const text = el.value; //student name
 
-    if(!result[status]) result[status] = {};
-    if(!result[status][chapter]) result[status][chapter] = []
-    if(!result["row_cols"][status]) result["row_cols"][status] = [];
+    if (!result[status]) result[status] = {};
+    if (!result[status][chapter]) result[status][chapter] = [];
+    if (!result["row_cols"][status]) result["row_cols"][status] = [];
 
-    if(!work_map[status+"_"+chapter+"_"+hw_title]) work_map[status+"_"+chapter+"_"+hw_title] = [];
-    
-    result["row_cols"][status].push(row_num+" : "+col_num);
-    work_map[status+"_"+chapter+"_"+hw_title].push(text)
+    if (!work_map[status + "_" + chapter + "_" + hw_title])
+      work_map[status + "_" + chapter + "_" + hw_title] = [];
+
+    result["row_cols"][status].push(row_num + " : " + col_num);
+    work_map[status + "_" + chapter + "_" + hw_title].push(text);
   });
 
-  for(i in work_map){
-    let index_split_arr = i.split("_")
-    let student_arr = work_map[i]
-    let out_text = index_split_arr[2] + " #% "
-    for(let j=0;j<student_arr.length;j++)
-      out_text+=student_arr[j]+", ";
+  for (i in work_map) {
+    let index_split_arr = i.split("_");
+    let student_arr = work_map[i];
+    let out_text = index_split_arr[2] + " #% ";
+    for (let j = 0; j < student_arr.length; j++)
+      out_text += student_arr[j] + ", ";
 
-    result[index_split_arr[0]][index_split_arr[1]].push(out_text.substring(0,out_text.length - 2))
+    result[index_split_arr[0]][index_split_arr[1]].push(
+      out_text.substring(0, out_text.length - 2),
+    );
   }
 
   return result;
 }
 
-async function openHomeworkWindow(){
+async function openHomeworkWindow() {
   document.getElementById("checkHWclass").value = "";
   document.getElementById("checkHWsubject").value = "";
   document.getElementById("checkHWNext").disabled = true;
@@ -116,7 +118,7 @@ async function openHomeworkWindow(){
 function populateCheckHWClassDropdown() {
   const hwclassDropdown = document.getElementById("checkHWclass");
   const hwsubjectDropdown = document.getElementById("checkHWsubject");
-  
+
   hwclassDropdown.innerHTML = ""; // Clear existing classes
   hwsubjectDropdown.innerHTML = "";
 
@@ -163,76 +165,81 @@ function populateCheckHWSubjectDropdown() {
 function showHWCheckWindow() {
   const examDetailDiv = document.getElementById("selectCheckHWHeading_div");
   const examDetailLabel = document.getElementById("selectCheckHWHeading_lbl");
-  let nextButton = document.getElementById("submitButtonCheckHW")
+  let nextButton = document.getElementById("submitButtonCheckHW");
 
-  nextButton.disabled = true
+  nextButton.disabled = true;
 
   examDetailDiv.style.display = "block";
   examDetailLabel.innerHTML = `${selectedCheckHwClass} : ${selectedCheckHwSubject}`;
-  nextButton.onclick = function(){
+  nextButton.onclick = function () {
     submitHWStatus();
-  }
+  };
 
-  createMainAccordionHW("selectCheckHWWindow")
+  createMainAccordionHW("selectCheckHWWindow");
 
   SHOW_SPECIFIC_DIV("selectCheckHWContainer");
 }
 
-function submitHWStatus(){
-  selectedHWStatus["class"] = selectedCheckHwClass
-  selectedHWStatus["subject"] = selectedCheckHwSubject
-  selectedHWStatus["teacher"] = selectedTeacher
-  selectedHWStatus["row_map"] = {}
-  let j
-  
-  let validationMap = validateHWStatusSelection()
-  if(validationMap["ERR"] != null){
-    SHOW_ERROR_POPUP(validationMap["ERR"])
+function submitHWStatus() {
+  selectedHWStatus["class"] = selectedCheckHwClass;
+  selectedHWStatus["subject"] = selectedCheckHwSubject;
+  selectedHWStatus["teacher"] = selectedTeacher;
+  selectedHWStatus["row_map"] = {};
+  let j;
+
+  let validationMap = validateHWStatusSelection();
+  if (validationMap["ERR"] != null) {
+    SHOW_ERROR_POPUP(validationMap["ERR"]);
     return;
   }
-  console.log("Selected Values:")
-  console.log(validationMap)
-  selectedHWStatus["row_map"] = validationMap
+  console.log("Selected Values:");
+  console.log(validationMap);
+  selectedHWStatus["row_map"] = validationMap;
 
-  let outGrid = {}
-  let header_arr = []
+  let outGrid = {};
+  let header_arr = [];
 
-  for(let header in validationMap)
-  {
-    if(header == "row_cols")
-      continue;
+  for (let header in validationMap) {
+    if (header == "row_cols") continue;
 
-    outGrid[header] = {}
+    outGrid[header] = {};
 
-    header_arr.push(header)
-    for(let chapter in validationMap[header]){
-      let work_arr = validationMap[header][chapter]
-      let type_map = {}
-      for(j=0;j<work_arr.length;j++)
-      {
-         let split_arr = work_arr[j].split(" #% ")
-        if(type_map[split_arr[0]] == null)
-          type_map[split_arr[0]] = "";
-        
-        type_map[split_arr[0]]+=split_arr[1]+"\n";
+    header_arr.push(header);
+    for (let chapter in validationMap[header]) {
+      let work_arr = validationMap[header][chapter];
+      let type_map = {};
+      for (j = 0; j < work_arr.length; j++) {
+        let split_arr = work_arr[j].split(" #% ");
+        if (type_map[split_arr[0]] == null) type_map[split_arr[0]] = "";
+
+        type_map[split_arr[0]] += split_arr[1] + "\n";
       }
 
-      for(j in type_map)
-        if(type_map[j] != "")
-        {
-          let map_key = `${chapter}_${j}`
-          outGrid[header][map_key] = {}
-          outGrid[header][map_key]["Chapter"] = chapter
-          outGrid[header][map_key]["Homework"] = j
-          outGrid[header][map_key]["Students"] = type_map[j]
+      for (j in type_map)
+        if (type_map[j] != "") {
+          let map_key = `${chapter}_${j}`;
+          outGrid[header][map_key] = {};
+          outGrid[header][map_key]["Chapter"] = chapter;
+          outGrid[header][map_key]["Homework"] = j;
+          outGrid[header][map_key]["Students"] = type_map[j];
         }
     }
   }
-  
-  openVerifyDetailsWindow(["Chapter","Homework","Students"],header_arr,outGrid,() => SHOW_CONFIRMATION_POPUP("Are you sure to proceed!",sendHomeworkStatusBackend),"selectCheckHWContainer")
+
+  openVerifyDetailsWindow(
+    ["Chapter", "Homework", "Students"],
+    header_arr,
+    outGrid,
+    () =>
+      SHOW_CONFIRMATION_POPUP(
+        "Are you sure to proceed!",
+        sendHomeworkStatusBackend,
+      ),
+    "selectCheckHWContainer",
+  );
 }
 
-async function sendHomeworkStatusBackend(){
+async function sendHomeworkStatusBackend() {
   console.log(selectedHWStatus);
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.SUBMIT_HOMEWORK_STATUS,
@@ -250,25 +257,31 @@ async function sendHomeworkStatusBackend(){
     else
       SHOW_ERROR_POPUP(
         "Unable to submit home work status for: " +
-          selectedHWStatus["class"] + " : " + selectedHWStatus["subject"] + "!!\n\n" +
+          selectedHWStatus["class"] +
+          " : " +
+          selectedHWStatus["subject"] +
+          "!!\n\n" +
           outputData.response.split("ERR: ")[1],
       );
   } else
     SHOW_ERROR_POPUP(
-      "Unable to submit home work status for: " + selectedHWStatus["class"] + " : " + selectedHWStatus["subject"] + "!!",
+      "Unable to submit home work status for: " +
+        selectedHWStatus["class"] +
+        " : " +
+        selectedHWStatus["subject"] +
+        "!!",
     );
 
-  return
+  return;
 }
 
 function createMainAccordionHW(inputId) {
-
   const mainContainer = document.getElementById(inputId);
   mainContainer.innerHTML = "";
 
-  Object.entries(pendingCheckHWList[selectedCheckHwClass][selectedCheckHwSubject])
-  .forEach(([chapterTitle, homeworks]) => {
-
+  Object.entries(
+    pendingCheckHWList[selectedCheckHwClass][selectedCheckHwSubject],
+  ).forEach(([chapterTitle, homeworks]) => {
     const chapterItem = document.createElement("div");
     chapterItem.classList.add("accordion-item");
 
@@ -291,7 +304,6 @@ function createMainAccordionHW(inputId) {
 
     // 🔹 HOMEWORK LEVEL
     Object.entries(homeworks).forEach(([hwTitle, students]) => {
-
       const typeItem = document.createElement("div");
       typeItem.classList.add("accordion-item");
 
@@ -339,7 +351,6 @@ function createMainAccordionHW(inputId) {
       grid.appendChild(headerRow);
 
       for (let i = 0; i < students.length; i++) {
-
         let [text, col_num, row_num] = students[i].split("%"); // ✅ clean split
 
         const row = document.createElement("div");
@@ -368,6 +379,5 @@ function createMainAccordionHW(inputId) {
 
       typeContent.appendChild(grid);
     });
-
   });
 }
