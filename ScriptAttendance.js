@@ -521,7 +521,7 @@ async function openAttendanceWindow() {
 
     if (result !== 1) {
       SHOW_ERROR_POPUP(
-        `❌ Action Disallowed ❌\n\n⚠️ You are ${result} away from Gurukul.\n\nAttendance can only be marked within the school campus.`,
+        `❌ Action Disallowed ❌\n\n⚠️ Your current location ${result.split("%")[1]} is ${result.split("%")[0]} away from Gurukul.\n\nAttendance can only be marked within the school campus.`,
       );
       return; // ✅ NOW this works as expected
     }
