@@ -88,11 +88,11 @@ async function getTeacherFeedback() {
   });
 
   if (outputData?.status && outputData.data) {
-    if (
-      typeof outputData.data === "string" &&
-      outputData.data.includes("ERR")
-    ) {
-      SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
+    if (typeof outputData.data === "string") {
+      if (outputData.data.includes("ERR"))
+        SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
+      else SHOW_INFO_POPUP(outputData.data);
+
       return;
     }
 
