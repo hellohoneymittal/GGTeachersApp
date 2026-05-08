@@ -27,6 +27,16 @@ let commentThresholdMarks = 0.5;
 let inputPassword = "";
 let inputMarksDetails = {};
 
+document.querySelectorAll(".accordion-header").forEach((header) => {
+  header.addEventListener("click", () => {
+    const content = header.nextElementSibling;
+
+    content.classList.toggle("show");
+
+    header.classList.toggle("active");
+  });
+});
+
 const feedbackArr = [
   "😊Student's Behaviour is Perfect!👍",
   "Not Disciplined in class",

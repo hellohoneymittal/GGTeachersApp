@@ -142,73 +142,137 @@
               <p id="login-user-name-lbl_fp"></p>
             </div>
 
-            <button class="green" onclick="openTimeTableWindow()">
-              View My Timetable
-            </button>
-            <button class="green" onclick="openLeavesWindow()">
-              Apply Leaves
-            </button>
-            <button class="green" onclick="openAttendanceWindow()">
-              Fill Attendance
-            </button>
-            <button class="green" onclick="openJapaWindow(1)">
-              Fill Attendance for Examination
-            </button>
-            <button
-              class="green"
-              id="giveQPBtn"
-              onclick="distributeQPWindow()"
-              style="display: none"
-            >
-              Distribute Question Papers
-            </button>
-            <button class="green" onclick="openExamsWindow()">
-              Submit Examination Marks
-            </button>
-            <button class="green" onclick="openGenerateHomeworkWindow()">
-              Fill Today's Work
-            </button>
-            <button class="green" onclick="openHomeworkWindow()">
-              Check Homework
-            </button>
-            <button class="green" onclick="openJapaWindow()">
-              Student Japa
-            </button>
-            <button class="green" onclick="openFeedbacksWindow()">
-              Submit/View Feedback/Issue
-            </button>
-            <button
-              class="green"
-              id="gatePassBtn"
-              onclick="openGatePassWindow()"
-              style="display: none"
-            >
-              Student Gate Pass Approval
-            </button>
-            <button
-              class="green"
-              id="yearlyAdmissionBtn"
-              onclick="retrieveStudentSubmissions()"
-              style="display: none"
-            >
-              Yearly Admission Delivery Dashboard
-            </button>
-            <button
-              class="green"
-              id="yearlyAdmissionFinanceBtn"
-              onclick="yearlyAdmissionFinanceClick()"
-              style="display: none"
-            >
-              Yearly Kit Payment Dashboard
-            </button>
-            <button
-              class="green"
-              id="splStudentEntryBtn"
-              onclick="splStudentEntryBtnClick()"
-              style="display: none"
-            >
-              Special Entry System
-            </button>
+            <br />
+
+            <h2>Teacher Dashboard</h2>
+
+            <div class="accordion-container">
+              <!-- My Corner -->
+              <div class="accordion-item">
+                <button class="accordion-header">
+                  My Requests
+                  <span class="icon">▶</span>
+                </button>
+
+                <div class="accordion-content">
+                  <div class="question-grid">
+                    <button class="green" onclick="openLeavesWindow()">
+                      Apply Leaves
+                    </button>
+                    <button class="green" onclick="openFeedbacksWindow()">
+                      Submit/View Feedback/Issue
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACADEMICS -->
+              <div class="accordion-item">
+                <button class="accordion-header">
+                  Daily Activities
+                  <span class="icon">▶</span>
+                </button>
+
+                <div class="accordion-content">
+                  <div class="question-grid">
+                    <button class="green" onclick="openTimeTableWindow()">
+                      View My Timetable
+                    </button>
+
+                    <button class="green" onclick="openAttendanceWindow()">
+                      Fill Attendance
+                    </button>
+
+                    <button class="green" onclick="openJapaWindow(1)">
+                      Fill Attendance for Examination
+                    </button>
+
+                    <button
+                      class="green"
+                      onclick="openGenerateHomeworkWindow()"
+                    >
+                      Fill Today's Work
+                    </button>
+                    <button class="green" onclick="openJapaWindow()">
+                      Student Japa
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <button class="accordion-header">
+                  Homework/Examination
+                  <span class="icon">▶</span>
+                </button>
+                <div class="accordion-content">
+                  <div class="question-grid">
+                    <button class="green" onclick="openHomeworkWindow()">
+                      Check Homework
+                    </button>
+                    <button class="green" onclick="openExamsWindow()">
+                      Submit Examination Marks
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Administration -->
+              <div class="accordion-item">
+                <button class="accordion-header">
+                  Administration
+                  <span class="icon">▶</span>
+                </button>
+
+                <div class="accordion-content">
+                  <div class="question-grid">
+                    <button
+                      class="green"
+                      id="gatePassBtn"
+                      onclick="openGatePassWindow()"
+                      style="display: none"
+                    >
+                      Student Gate Pass Approval
+                    </button>
+
+                    <button
+                      class="green"
+                      id="splStudentEntryBtn"
+                      onclick="splStudentEntryBtnClick()"
+                      style="display: none"
+                    >
+                      Special Entry System
+                    </button>
+                    <button
+                      class="green"
+                      id="giveQPBtn"
+                      onclick="distributeQPWindow()"
+                      style="display: none"
+                    >
+                      Distribute Question Papers
+                    </button>
+
+                    <button
+                      class="green"
+                      id="yearlyAdmissionBtn"
+                      onclick="retrieveStudentSubmissions()"
+                      style="display: none"
+                    >
+                      Yearly Admission Delivery Dashboard
+                    </button>
+
+                    <button
+                      class="green"
+                      id="yearlyAdmissionFinanceBtn"
+                      onclick="yearlyAdmissionFinanceClick()"
+                      style="display: none"
+                    >
+                      Yearly Kit Payment Dashboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <button class="red" onclick="onLogoutClick()">Logout</button>
           </div>
