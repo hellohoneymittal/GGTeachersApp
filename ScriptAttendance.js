@@ -488,7 +488,7 @@ async function openAttendanceWindow() {
   //28.657501589771897, 77.43753484576277
   const schoolLat = 28.657501589771897; // your school latitude
   const schoolLng = 77.43753484576277; // your school longitude
-  const allowedRadius = 50; // meters
+  const allowedRadius = 150; // meters
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
   [h, m] = school_start_time.split(":").map(Number);
@@ -521,7 +521,7 @@ async function openAttendanceWindow() {
 
     if (result !== 1) {
       SHOW_ERROR_POPUP(
-        `❌ Action Disallowed ❌\n\n⚠️ You are ${result} away from Gurukul.\n\nAttendance can only be marked within the school campus.`,
+        `❌ Action Disallowed ❌\n\n⚠️ Your current location ${result.split("%")[1]} is ${result.split("%")[0]} away from Gurukul.\n\nAttendance can only be marked within the school campus.`,
       );
       return; // ✅ NOW this works as expected
     }

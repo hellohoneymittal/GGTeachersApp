@@ -1406,6 +1406,8 @@ function checkLocation(inputLat, inputLong, allowedRadius) {
           formattedDistance = (Number(distance) / 1000).toFixed(2) + " km";
         else formattedDistance = Number(distance).toFixed(2) + " m";
 
+        formattedDistance += `%(${Number(latitude).toFixed(5)},${Number(longitude).toFixed(5)})`;
+
         resolve(distance <= allowedRadius ? 1 : formattedDistance);
       },
       (error) => {

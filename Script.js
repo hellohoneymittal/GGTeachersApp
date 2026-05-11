@@ -27,6 +27,16 @@ let commentThresholdMarks = 0.5;
 let inputPassword = "";
 let inputMarksDetails = {};
 
+document.querySelectorAll(".accordion-header").forEach((header) => {
+  header.addEventListener("click", () => {
+    const content = header.nextElementSibling;
+
+    content.classList.toggle("show");
+
+    header.classList.toggle("active");
+  });
+});
+
 const feedbackArr = [
   "😊Student's Behaviour is Perfect!👍",
   "Not Disciplined in class",
@@ -1404,9 +1414,9 @@ async function submitExamMarks() {
   ) {
     console.log(outputData.response);
     if (outputData.response == "ok")
-      SHOW_SUCCESS_POPUP("Marks submitted Successfully!", openExamsWindow);
+      SHOW_SUCCESS_POPUP("Marks submitted Successfully!", homePageClick);
     else if (outputData.response == "okct")
-      SHOW_SUCCESS_POPUP("Response submitted Successfully!", openExamsWindow);
+      SHOW_SUCCESS_POPUP("Response submitted Successfully!", homePageClick);
     else
       SHOW_ERROR_POPUP(
         "Unable to submit marks for: " +
