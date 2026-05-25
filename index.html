@@ -206,6 +206,16 @@
                     <button class="green" onclick="openHomeworkWindow()">
                       Check Homework
                     </button>
+                    <button class="green" onclick="openComputerExamWindow()">
+                      Computers Examination
+                    </button>
+                    <button
+                      class="green"
+                      onclick="openStudentPasswordWindow()"
+                      hidden
+                    >
+                      View Student Passwords
+                    </button>
                     <button class="green" onclick="openJapaWindow(1)">
                       Fill Examination Attendance
                     </button>
@@ -357,6 +367,43 @@
               disabled
             >
               Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="computerExamWindow">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="user-info-block">
+            <p id="computerExamHeading_lbl"></p>
+          </div>
+          <br />
+          <h2>Computers Examination Details</h2>
+
+          <div>
+            <select id="computerClassSelect"></select>
+          </div>
+
+          <div>
+            <select id="computerSessionSelect"></select>
+          </div>
+
+          <br />
+
+          <div class="table-card" id="tableBlock">
+            <h3 id="computerExamHeading"></h3>
+            <br />
+            <button class="green" id="viewQPBtn">Question Paper</button>
+            <button class="green" id="openWorkBtn">Student Work Area</button>
+          </div>
+          <br />
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
             </button>
           </div>
         </div>
@@ -1283,5 +1330,6 @@
     <script src="ScriptGatePass.js"></script>
     <script src="ScriptSplEntrySystem.js"></script>
     <script src="ScriptFeedback.js"></script>
+    <script src="ScriptExamination.js"></script>
   </body>
 </html>
