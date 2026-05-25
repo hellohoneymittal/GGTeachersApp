@@ -30,6 +30,7 @@ function renderMenus(selectedName, roleObj) {
   );
   SHOW_BUTTON_BY_ADMIN_ROLE("gatePassBtn", "Security Role", roleObj);
   SHOW_BUTTON_BY_ADMIN_ROLE("giveQPBtn", "Security Role", roleObj);
+  SHOW_BUTTON_BY_ADMIN_ROLE("generateDateSheetBtn", "Security Role", roleObj);
   SHOW_BUTTON_BY_ADMIN_ROLE(
     "splStudentEntryBtn",
     "Special Student Entry Role",
