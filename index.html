@@ -209,11 +209,7 @@
                     <button class="green" onclick="openComputerExamWindow()">
                       Computers Examination
                     </button>
-                    <button
-                      class="green"
-                      onclick="openStudentPasswordWindow()"
-                      hidden
-                    >
+                    <button class="green" onclick="openStudentPasswordWindow()">
                       View Student Passwords
                     </button>
                     <button class="green" onclick="openJapaWindow(1)">
@@ -399,6 +395,48 @@
             <br />
             <button class="green" id="viewQPBtn">Question Paper</button>
             <button class="green" id="openWorkBtn">Student Work Area</button>
+          </div>
+          <br />
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="studentPasswordWindow">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="user-info-block">
+            <p id="studentPasswordHeading_lbl"></p>
+          </div>
+          <br />
+          <h2>Student Password Details</h2>
+
+          <div>
+            <select id="studentClassSelect"></select>
+          </div>
+
+          <br />
+
+          <div class="table-card" id="studentPasswordtableBlock">
+            <div style="overflow: auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Admission Number</th>
+                    <th>Password</th>
+                  </tr>
+                </thead>
+
+                <tbody id="studentPasswordTableBody"></tbody>
+              </table>
+            </div>
           </div>
           <br />
           <div class="button-row">

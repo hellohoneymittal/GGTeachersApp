@@ -1559,3 +1559,128 @@ async function submitQPDistribution() {
 
   return;
 }
+
+const passwordDataBlock = document.getElementById("studentPasswordtableBlock");
+const passwordClassSelect = document.getElementById("studentClassSelect");
+const passwordTableBody = document.getElementById("studentPasswordTableBody");
+const tableCard = document.getElementById("studentPasswordtableBlock");
+let passwordOutData = {};
+
+passwordClassSelect.addEventListener("change", loadStudentPasswords);
+
+function loadStudentPasswords() {
+  const selectedClass = passwordClassSelect.value;
+
+  passwordTableBody.innerHTML = "";
+
+  console.log(selectedClass);
+
+  if (selectedClass === "") {
+    tableCard.hidden = true;
+    passwordDataBlock.hidden = true;
+    return;
+  }
+
+  passwordDataBlock.hidden = false;
+
+  tableCard.hidden = false;
+
+  console.log(passwordOutData[selectedClass]);
+
+  renderPasswordTable(passwordOutData[selectedClass]);
+}
+
+function renderPasswordTable(data) {
+  passwordTableBody.innerHTML = "";
+  let i;
+
+  for (i = 0; i < data.length; i++) {
+    let next_element = data[i];
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+
+          <td>${next_element["name"]}</td>
+
+          <td>${next_element["admission_num"]}</td>
+
+          <td>${next_element["password"]}</td>
+
+        `;
+
+    passwordTableBody.appendChild(row);
+  }
+}
+
+function processPasswordSessionData(text, subjectMap) {
+  const lines = text.split("\n");
+
+  lines.forEach((line) => {
+    const match = line.match(/(.+) - (\d+)\/(\d+)/);
+
+    if (!match) return;
+
+    const subject = match[1].trim();
+
+    const present = Number(match[2]);
+    const total = Number(match[3]);
+
+    if (!subjectMap[subject]) {
+      subjectMap[subject] = {
+        present: 0,
+        total: 0,
+      };
+    }
+
+    subjectMap[subject].present += present;
+    subjectMap[subject].total += total;
+  });
+}
+
+async function openStudentPasswordWindow() {
+  let passwordOutputData = await CALL_API("GET_STUDENT_PASSWORD", {});
+
+  if (passwordOutputData?.status && passwordOutputData.data) {
+    if (
+      typeof passwordOutputData.data === "string" &&
+      passwordOutputData.data.includes("ERR")
+    ) {
+      SHOW_ERROR_POPUP(passwordOutputData.data.split("ERR: ")[1]);
+      return;
+    }
+
+    passwordOutData = passwordOutputData.data;
+
+    console.log(passwordOutData);
+
+    document.getElementById("studentPasswordHeading_lbl").innerText =
+      `${selectedTeacher}`;
+
+    passwordTableBody.innerHTML = "";
+    passwordClassSelect.innerHTML = "";
+
+    passwordDataBlock.hidden = true;
+    tableCard.hidden = true;
+
+    let defaultOption = document.createElement("option");
+
+    defaultOption.value = "";
+    defaultOption.textContent = "---------Select Class--------";
+
+    passwordClassSelect.appendChild(defaultOption);
+
+    Object.keys(passwordOutData).forEach((className) => {
+      passwordClassSelect.innerHTML += `
+      <option value="${className}">
+        ${className}
+      </option>
+    `;
+    });
+
+    SHOW_SPECIFIC_DIV("studentPasswordWindow");
+  } else {
+    SHOW_ERROR_POPUP("Some problem in fetching passwords for Students!");
+    return;
+  }
+}

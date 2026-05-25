@@ -111,31 +111,21 @@ async function openComputerExamWindow() {
   classSelect.innerHTML = "";
 
   // Default option
-  let defaultOption = document.createElement("option");
+  const defaultClassOption = document.createElement("option");
+
+  defaultClassOption.value = "";
+  defaultClassOption.textContent = "---------Select Class--------";
+
+  classSelect.appendChild(defaultClassOption);
+
+  loadClasses();
+
+  const defaultOption = document.createElement("option");
 
   defaultOption.value = "";
   defaultOption.textContent = "---------Select Session--------";
 
   sessionSelect.appendChild(defaultOption);
-
-  defaultOption = document.createElement("option");
-
-  defaultOption.value = "";
-  defaultOption.textContent = "---------Select Class--------";
-
-  classSelect.appendChild(defaultOption);
-
-  loadClasses();
-
-  // Create options dynamically from keys
-  Object.keys(computer_output_map).forEach((key) => {
-    const option = document.createElement("option");
-
-    option.value = key;
-    option.textContent = key;
-
-    sessionSelect.appendChild(option);
-  });
 
   tableBlock.hidden = true;
   openWorkBtn.hidden = true;
