@@ -39,13 +39,13 @@ document.querySelectorAll(".accordion-header").forEach((header) => {
 
 const feedbackArr = [
   "😊Student's Behaviour is Perfect!👍",
-  "Not Disciplined in class",
-  "Not Come on time in class",
+  "Not Disciplined behaviour",
+  "Not Follows Gurukul/Hostel schedule",
   "Not Active in class",
   "Not Complete homework on time",
   "Not Good quality of home work",
   "Not Chants seriously",
-  "Not Sincere in bringing workbook",
+  "Not Sincere in bringing textbook/workbook/notebook",
   "Not Have good relations with others",
   "Not Show proper respect to teachers",
 ];
