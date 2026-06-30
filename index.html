@@ -212,6 +212,9 @@
                     <button class="green" onclick="openStudentPasswordWindow()">
                       View Student Passwords
                     </button>
+                    <button class="green" onclick="openDateSheetWindow()">
+                      Examination Datesheet
+                    </button>
                     <button class="green" onclick="openJapaWindow(1)">
                       Fill Examination Attendance
                     </button>
@@ -368,6 +371,45 @@
         </div>
       </div>
 
+      <div class="popup" id="examScheduleGridPopup">
+        <div
+          class="popup-content scrollable-content"
+          id="examScheduleGridSubPopup"
+        >
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="heading">Examination Datesheet</div>
+          <div id="classDropdown">
+            <select id="classSelect">
+              <option value="">---------Select Class--------</option>
+              <option value="All">All</option>
+              <option value="Sri Keshava Level 2">Sri Keshava Level 2</option>
+              <option value="Sri Keshava Level 3">Sri Keshava Level 3</option>
+              <option value="Sri Keshava Level 4">Sri Keshava Level 4</option>
+              <option value="Sri Narayana">Sri Narayana</option>
+              <option value="Sri Madhava">Sri Madhava</option>
+              <option value="Sri Govinda">Sri Govinda</option>
+              <option value="Sri Vishnu">Sri Vishnu</option>
+              <option value="Sri Madhusudana">Sri Madhusudana</option>
+              <option value="Sri Trivikrama">Sri Trivikrama</option>
+              <option value="Sri Vamana">Sri Vamana</option>
+              <option value="Sri Sridhara">Sri Sridhara</option>
+              <option value="Sri Hrishikesha">Sri Hrishikesha</option>
+              <option value="Sri Padmanabha">Sri Padmanabha</option>
+              <option value="Sri Damodara">Sri Damodara</option>
+              <option value="Sri Vasudeva">Sri Vasudeva</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="popup" id="computerExamWindow">
         <div class="popup-content scrollable-content">
           <img
@@ -464,36 +506,8 @@
             <div class="radio-heading-student">
               <label class="required">Pledge</label>
             </div>
-            <div class="radio-content-without-flex">
-              <div class="options">
-                <input
-                  type="checkbox"
-                  id="ct-pledge"
-                  name="mcqPledge"
-                  value="Yes"
-                  class="custom-checkbox"
-                />
-                <label
-                  for="ct-pledge"
-                  class="custom-label-student"
-                  id="ct-pledge-label"
-                >
-                  I will take Learning Assessment Today!
-                </label>
-                <input
-                  type="checkbox"
-                  id="language-pledge"
-                  name="languagePledge"
-                  value="Yes"
-                  class="custom-checkbox"
-                />
-                <label
-                  for="language-pledge"
-                  class="custom-label-student"
-                  id="language-pledge-label"
-                >
-                </label>
-              </div>
+            <div class="radio-content-without-flex" id="dynamic-pledge-list">
+              <!-- Dynamic pledge options go here -->
             </div>
           </div>
 

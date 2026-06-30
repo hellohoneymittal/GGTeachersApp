@@ -1,6 +1,8 @@
 let selectedTeacher = "";
 let selectedClass = "";
 let selectedSubject = "";
+let examNextDay = 0;
+
 const questions = [
   {
     q: "Do you give homework that takes around 25 minutes to complete?",
@@ -202,6 +204,7 @@ function validateAnswer() {
 // Event listener for class dropdown change
 document.getElementById("class").addEventListener("change", function () {
   selectedClass = this.value.trim();
+  examNextDay = classSubList[selectedClass]["examNextDay"];
   populateSubjectDropdown(selectedClass);
   getTodaysQuestion;
   // Reset subject dropdown to default "Select" option when class is changed
@@ -495,7 +498,7 @@ async function openAttendanceWindow() {
   let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = ["Aravinda Nimai Prabhuji"];
+  let ignoreTeachers = [];
   let result = 0;
 
   if (now.getDay() === 0) {
@@ -567,4 +570,59 @@ async function openAttendanceWindow() {
   });
 
   SHOW_SPECIFIC_DIV("pledgePopup");
+}
+
+async function goToStudentContainer() {
+  const data = {
+    className: selectedClass,
+    subjectName: selectedSubject,
+  };
+
+  const nameDiv = document.getElementById("selectStudentsHeading_div");
+  const nameLabel = document.getElementById("selectStudentsHeading_lbl");
+  const submitBtn = document.getElementById("mark_attendance_button");
+  let pledgeArr = [];
+
+  submitBtn.disabled = true;
+
+  nameDiv.style.display = "block";
+  nameLabel.innerHTML = `${selectedClass} : ${selectedSubject}`;
+
+  if (selectedSubject == "English") {
+    pledgeArr.push(
+      "I will use only English while speaking with students during the period.",
+    );
+  }
+
+  if (selectedSubject == "Hindi") {
+    pledgeArr.push(
+      "मैं कक्षा के दौरान विद्यार्थियों से केवल हिंदी में ही बात करूँगा/करूँगी।",
+    );
+  }
+
+  SHOW_SPECIFIC_DIV("stdAttendanceContainer");
+
+  const pledgeDiv = document.getElementById("pledgeContainer");
+
+  if (
+    ctResponse[selectedClass] &&
+    ctResponse[selectedClass].includes(selectedSubject.toLowerCase())
+  ) {
+    pledgeArr.push("I will take Learning Assessment Today!");
+  } else if (examNextDay == 1) {
+    pledgeArr.push("I will discuss question paper today!");
+  }
+
+  if (pledgeArr.length > 0) {
+    pledgeDiv.style.display = "inline-block";
+    // Populate multi-select UI
+    populateStudentMultiSelectDropdown(
+      "dynamic-pledge-list",
+      pledgeArr,
+      "pledgeList",
+    );
+  } else {
+    pledgeDiv.style.display = "none"; // Hide
+    submitBtn.disabled = false;
+  }
 }
