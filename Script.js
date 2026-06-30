@@ -912,64 +912,6 @@ function resetJapaFormFields() {
   updateTimerColor("greenDisabled", mainBtn);
 }
 
-async function goToStudentContainer() {
-  const data = {
-    className: selectedClass,
-    subjectName: selectedSubject,
-  };
-
-  const nameDiv = document.getElementById("selectStudentsHeading_div");
-  const nameLabel = document.getElementById("selectStudentsHeading_lbl");
-  const languageCheckbox = document.getElementById("language-pledge");
-  const languageLabel = document.getElementById("language-pledge-label");
-  const ctCheckbox = document.getElementById("ct-pledge");
-  const ctLabel = document.getElementById("ct-pledge-label");
-  const submitBtn = document.getElementById("mark_attendance_button");
-
-  submitBtn.disabled = true;
-
-  nameDiv.style.display = "block";
-  nameLabel.innerHTML = `${selectedClass} : ${selectedSubject}`;
-
-  languageCheckbox.style.display = "none";
-  languageLabel.style.display = "none";
-  languageCheckbox.checked = false;
-
-  ctCheckbox.style.display = "none";
-  ctLabel.style.display = "none";
-  ctCheckbox.checked = false;
-
-  if (selectedSubject == "English") {
-    languageCheckbox.style.display = "inline-block";
-    languageLabel.style.display = "inline-block";
-    languageLabel.innerHTML = `I will use only English while speaking with students during the period.`;
-  }
-
-  if (selectedSubject == "Hindi") {
-    languageCheckbox.style.display = "inline-block";
-    languageLabel.style.display = "inline-block";
-    languageLabel.innerHTML = `मैं कक्षा के दौरान विद्यार्थियों से केवल हिंदी में ही बात करूँगा/करूँगी।`;
-  }
-
-  SHOW_SPECIFIC_DIV("stdAttendanceContainer");
-
-  const pledgeDiv = document.getElementById("pledgeContainer");
-
-  if (
-    ctResponse[selectedClass] &&
-    ctResponse[selectedClass].includes(selectedSubject.toLowerCase())
-  ) {
-    pledgeDiv.style.display = "inline-block"; // Show
-    ctCheckbox.style.display = "inline-block";
-    ctLabel.style.display = "inline-block";
-  } else if (selectedSubject == "English" || selectedSubject == "Hindi") {
-    pledgeDiv.style.display = "inline-block"; // Show
-  } else {
-    pledgeDiv.style.display = "none"; // Hide
-    submitBtn.disabled = false;
-  }
-}
-
 function groupByChapter(data) {
   const grouped = {};
   data.forEach(([chapter, type, desc]) => {
