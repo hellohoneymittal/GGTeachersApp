@@ -164,6 +164,8 @@ async function openDateSheetWindow() {
     const buttonRow = popup.querySelector(".button-row");
     const dropdown = document.getElementById("classDropdown");
 
+    dropdown.value = "";
+
     //Removing all elements or cleanup
     const heading = popup.querySelector(".heading");
 
