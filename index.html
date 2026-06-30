@@ -179,6 +179,10 @@
                       View My Timetable
                     </button>
 
+                    <button class="green" onclick="openTimetableWindow()">
+                      View Class Timetable
+                    </button>
+
                     <button class="green" onclick="openAttendanceWindow()">
                       Fill Class Attendance
                     </button>
@@ -385,6 +389,45 @@
             <select id="classSelect">
               <option value="">---------Select Class--------</option>
               <option value="All">All</option>
+              <option value="Sri Keshava Level 2">Sri Keshava Level 2</option>
+              <option value="Sri Keshava Level 3">Sri Keshava Level 3</option>
+              <option value="Sri Keshava Level 4">Sri Keshava Level 4</option>
+              <option value="Sri Narayana">Sri Narayana</option>
+              <option value="Sri Madhava">Sri Madhava</option>
+              <option value="Sri Govinda">Sri Govinda</option>
+              <option value="Sri Vishnu">Sri Vishnu</option>
+              <option value="Sri Madhusudana">Sri Madhusudana</option>
+              <option value="Sri Trivikrama">Sri Trivikrama</option>
+              <option value="Sri Vamana">Sri Vamana</option>
+              <option value="Sri Sridhara">Sri Sridhara</option>
+              <option value="Sri Hrishikesha">Sri Hrishikesha</option>
+              <option value="Sri Padmanabha">Sri Padmanabha</option>
+              <option value="Sri Damodara">Sri Damodara</option>
+              <option value="Sri Vasudeva">Sri Vasudeva</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="timetableGridPopup">
+        <div
+          class="popup-content scrollable-content"
+          id="timetableGridSubPopup"
+        >
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="heading">Class Timetable</div>
+          <div id="timetableClassDropdown">
+            <select id="timetableClassSelect">
+              <option value="">---------Select Class--------</option>
+              <option value="Sri Keshava Level 1">Sri Keshava Level 1</option>
               <option value="Sri Keshava Level 2">Sri Keshava Level 2</option>
               <option value="Sri Keshava Level 3">Sri Keshava Level 3</option>
               <option value="Sri Keshava Level 4">Sri Keshava Level 4</option>
