@@ -1656,6 +1656,8 @@ async function openTimetableWindow() {
     const buttonRow = popup.querySelector(".button-row");
     const dropdown = document.getElementById("timetableClassDropdown");
 
+    dropdown.value = "";
+
     //Removing all elements or cleanup
     const heading = popup.querySelector(".heading");
 
