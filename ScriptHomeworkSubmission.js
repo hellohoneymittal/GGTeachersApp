@@ -150,7 +150,7 @@ function validateLPSelection(ct_sub) {
 }
 
 async function openGenerateHomeworkWindow() {
-  let school_end_time = "13:15";
+  // let school_end_time = "13:15";
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
   let now = new Date();

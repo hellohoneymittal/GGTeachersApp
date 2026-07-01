@@ -253,6 +253,15 @@ body {
   cursor: not-allowed; /* Shows a not-allowed cursor to indicate it cannot be clicked */
 }
 
+.popup-content .red:disabled {
+  background-color: #d8a3a3;
+  color: #ffffff;
+  border: 1px solid #c98f8f;
+  cursor: not-allowed;
+  opacity: 0.8;
+  box-shadow: none;
+}
+
 .password-popup-content .green {
   background-color: #4caf50;
   color: white;
@@ -1319,6 +1328,7 @@ tbody tr:nth-child(even) {
   display: flex;
   gap: 2px;
   text-align: center;
+  align-items: flex-start;
   margin: 15px 5px;
 }
 
@@ -1577,9 +1587,10 @@ input[type="radio"] {
 
 .gg-name {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   color: #333;
   margin-top: 7px;
+  background-color: #fff5ea;
 }
 
 .gg-timer {
@@ -1665,6 +1676,7 @@ input[type="radio"] {
 .custom-checkbox {
   width: 20px !important;
   margin-right: 10px !important;
+  margin-top: 2px;
 }
 
 .options-ChkBox {
@@ -1910,6 +1922,8 @@ input[type="radio"] {
 }
 
 .custom-label-student-red {
+  flex: 1;
+  text-align: left;
   font-size: 14px;
   cursor: pointer;
   user-select: none;
@@ -1919,6 +1933,8 @@ input[type="radio"] {
 }
 
 .custom-label-student-green {
+  flex: 1;
+  text-align: left;
   font-size: 14px;
   cursor: pointer;
   user-select: none;

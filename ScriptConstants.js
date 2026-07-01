@@ -48,7 +48,7 @@ const CONTROL_TYPE_CONSTAINT = {
 };
 
 // School start and end time
-const school_end_time = "14:35";
+const school_end_time = "14:50";
 const school_start_time = "06:50";
 
 //page constant
