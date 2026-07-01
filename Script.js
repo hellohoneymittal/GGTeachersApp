@@ -23,7 +23,6 @@ let studentIntervals = {};
 let ctResponse = {};
 let dataByClassResponse = "";
 let japaData = "";
-let commentThresholdMarks = 0.5;
 let inputPassword = "";
 let inputMarksDetails = {};
 let timetable_input_map = {};
@@ -216,395 +215,415 @@ async function goNextFromCt() {
   return valid_status;
 }
 
-function showMarksWindow() {
-  const examDetailDiv = document.getElementById("examFormHeading_div");
-  const examDetailLabel = document.getElementById("examFormHeading_lbl");
-
-  examDetailDiv.style.display = "block";
-  examDetailLabel.innerHTML = `${selectedExamClass} : ${selectedExamSubject} : ${selectedExamDetails["examName"]}`;
-
-  SHOW_SPECIFIC_DIV("examMarksContainer");
-  const container = document.getElementById("studentsMarksWindow");
-  container.className = "popup-content scrollable-content";
-  container.innerHTML = ""; // Clear old UI
-  let studentArray = selectedExamDetails["studentArr"];
-
-  studentArray.forEach((name) => {
-    let studentName = name.split("%")[0];
-    let studentCol = name.split("%")[1];
-    let handwritingNeeded = selectedExamDetails["handwritingNeeded"];
-    let feedbackNeeded = selectedExamDetails["feedbackNeeded"];
-    let commentNeeded = selectedExamDetails["commentNeeded"];
-    let marksArr = selectedExamDetails["maxMarks"].split("^");
-    let maxMarks = marksArr[0];
-
-    // UI
-    const studentDiv = document.createElement("div");
-    studentDiv.className = "student gg-exam-row-layout";
-    const label = document.createElement("label");
-    label.textContent = studentName;
-    label.className = "required";
-
-    studentDiv.appendChild(label);
-
-    if (marksArr.length == 1) {
-      let marks = 0;
-      const input_marks = document.createElement("input");
-      input_marks.type = "number";
-      input_marks.min = 0;
-      input_marks.max = maxMarks;
-      input_marks.step = 0.1;
-      input_marks.name = "marks_" + maxMarks;
-      input_marks.required = true;
-      input_marks.inputmode = "numeric";
-      input_marks.value = ""; // pre-fill value
-      input_marks.className = "gg-name-exam";
-      input_marks.id = "marks_" + studentCol;
-      input_marks.placeholder = "Enter Marks (0 to " + maxMarks + ")";
-
-      studentDiv.appendChild(input_marks);
-
-      const marksErr = document.createElement("div");
-      marksErr.className = "error";
-      marksErr.id = "Errmarks_" + studentCol;
-
-      studentDiv.appendChild(marksErr);
-
-      input_marks.addEventListener("change", () => {
-        if (validateNumber(input_marks, maxMarks)) {
-          let comment_divider = document.getElementById(
-            "comment_divider_" + studentCol,
-          );
-          let commentBox = document.getElementById("comment_" + studentCol);
-          let commentErr = document.getElementById("Err" + commentBox.id);
-
-          marks = Number(input_marks.value.trim());
-
-          if (marks < commentThresholdMarks * maxMarks && commentNeeded == 1) {
-            comment_divider.style.display = "block";
-            commentBox.value = "";
-            commentBox.style.display = "block";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "block";
-          } else {
-            comment_divider.style.display = "none";
-            commentBox.value = "";
-            commentBox.style.display = "none";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "none";
-          }
-        }
-      });
-    } else {
-      let wmarks = 0;
-      let gmarks = 0;
-      let lmarks = 0;
-
-      const writing_input_marks = document.createElement("input");
-      writing_input_marks.type = "number";
-      writing_input_marks.min = 0;
-      writing_input_marks.max = marksArr[1];
-      writing_input_marks.step = 0.1;
-      writing_input_marks.name = "marks_writing_" + marksArr[1];
-      writing_input_marks.required = true;
-      writing_input_marks.inputmode = "numeric";
-      writing_input_marks.value = ""; // pre-fill value
-      writing_input_marks.className = "gg-name-exam";
-      writing_input_marks.id = "marks_writing_" + studentCol;
-      writing_input_marks.placeholder =
-        "Writing Marks (0 to " + marksArr[1] + ")";
-
-      studentDiv.appendChild(writing_input_marks);
-
-      const writeMarksErr = document.createElement("div");
-      writeMarksErr.className = "error";
-      writeMarksErr.id = "Errmarks_writing_" + studentCol;
-
-      studentDiv.appendChild(writeMarksErr);
-
-      writing_input_marks.addEventListener("change", () => {
-        if (validateNumber(writing_input_marks, marksArr[1])) {
-          let comment_divider = document.getElementById(
-            "comment_divider_" + studentCol,
-          );
-          let commentBox = document.getElementById("comment_" + studentCol);
-          let commentErr = document.getElementById("Err" + commentBox.id);
-
-          wmarks = Number(writing_input_marks.value.trim());
-
-          // console.log("Writing section!")
-          // console.log(wmarks)
-          // console.log(gmarks)
-          // console.log(lmarks)
-          // console.log(wmarks+gmarks+lmarks)
-          // console.log(commentThresholdMarks*maxMarks)
-
-          if (
-            wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
-            commentNeeded == 1
-          ) {
-            comment_divider.style.display = "block";
-            commentBox.value = "";
-            commentBox.style.display = "block";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "block";
-          } else {
-            comment_divider.style.display = "none";
-            commentBox.value = "";
-            commentBox.style.display = "none";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "none";
-          }
-        }
-      });
-
-      let divider = document.createElement("hr");
-      divider.className = "divider";
-      studentDiv.appendChild(divider);
-
-      const grammar_input_marks = document.createElement("input");
-      grammar_input_marks.type = "number";
-      grammar_input_marks.min = 0;
-      grammar_input_marks.max = marksArr[2];
-      grammar_input_marks.step = 0.1;
-      grammar_input_marks.value = ""; // pre-fill value
-      grammar_input_marks.name = "marks_grammar_" + marksArr[2];
-      grammar_input_marks.required = true;
-      grammar_input_marks.inputmode = "numeric";
-      grammar_input_marks.className = "gg-name-exam";
-      grammar_input_marks.id = "marks_grammar_" + studentCol;
-      grammar_input_marks.placeholder =
-        "Grammar Marks (0 to " + marksArr[2] + ")";
-
-      studentDiv.appendChild(grammar_input_marks);
-
-      const gramMarksErr = document.createElement("div");
-      gramMarksErr.className = "error";
-      gramMarksErr.id = "Errmarks_grammar_" + studentCol;
-
-      studentDiv.appendChild(gramMarksErr);
-
-      grammar_input_marks.addEventListener("change", () => {
-        if (validateNumber(grammar_input_marks, marksArr[2])) {
-          let comment_divider = document.getElementById(
-            "comment_divider_" + studentCol,
-          );
-          let commentBox = document.getElementById("comment_" + studentCol);
-          let commentErr = document.getElementById("Err" + commentBox.id);
-
-          gmarks = Number(grammar_input_marks.value.trim());
-
-          // console.log("Writing section!")
-          // console.log(wmarks)
-          // console.log(gmarks)
-          // console.log(lmarks)
-          // console.log(wmarks+gmarks+lmarks)
-          // console.log(commentThresholdMarks*maxMarks)
-
-          if (
-            wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
-            commentNeeded == 1
-          ) {
-            comment_divider.style.display = "block";
-            commentBox.value = "";
-            commentBox.style.display = "block";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "block";
-          } else {
-            comment_divider.style.display = "none";
-            commentBox.value = "";
-            commentBox.style.display = "none";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "none";
-          }
-        }
-      });
-
-      divider = document.createElement("hr");
-      divider.className = "divider";
-      studentDiv.appendChild(divider);
-
-      const literature_input_marks = document.createElement("input");
-      literature_input_marks.type = "number";
-      literature_input_marks.min = 0;
-      literature_input_marks.max = marksArr[3];
-      literature_input_marks.step = 0.1;
-      literature_input_marks.inputmode = "numeric";
-      literature_input_marks.value = ""; // pre-fill value
-      literature_input_marks.className = "gg-name-exam";
-      literature_input_marks.name = "marks_literature_" + marksArr[3];
-      literature_input_marks.required = true;
-      literature_input_marks.id = "marks_literature_" + studentCol;
-      literature_input_marks.placeholder =
-        "Literature Marks (0 to " + marksArr[3] + ")";
-
-      studentDiv.appendChild(literature_input_marks);
-
-      const litMarksErr = document.createElement("div");
-      litMarksErr.className = "error";
-      litMarksErr.id = "Errmarks_literature_" + studentCol;
-
-      studentDiv.appendChild(litMarksErr);
-
-      literature_input_marks.addEventListener("change", () => {
-        if (validateNumber(literature_input_marks, marksArr[3])) {
-          let comment_divider = document.getElementById(
-            "comment_divider_" + studentCol,
-          );
-          let commentBox = document.getElementById("comment_" + studentCol);
-          let commentErr = document.getElementById("Err" + commentBox.id);
-          lmarks = Number(literature_input_marks.value.trim());
-
-          // console.log("Writing section!")
-          // console.log(wmarks)
-          // console.log(gmarks)
-          // console.log(lmarks)
-          // console.log(wmarks+gmarks+lmarks)
-          // console.log(commentThresholdMarks*maxMarks)
-
-          if (
-            wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
-            commentNeeded == 1
-          ) {
-            comment_divider.style.display = "block";
-            commentBox.value = "";
-            commentBox.style.display = "block";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "block";
-          } else {
-            comment_divider.style.display = "none";
-            commentBox.value = "";
-            commentBox.style.display = "none";
-            commentErr.innerHTML = "";
-            commentErr.style.display = "none";
-          }
-        }
-      });
-    }
-
-    // Adding comment box
-    const commentDivider = document.createElement("hr");
-    commentDivider.className = "divider";
-    commentDivider.style.display = "none";
-    commentDivider.id = "comment_divider_" + studentCol;
-
-    studentDiv.appendChild(commentDivider);
-
-    // const commentLabel = document.createElement("label");
-    // commentLabel.textContent = "";
-    // commentLabel.className = "required";
-
-    // studentDiv.appendChild(label);
-
-    const comments = document.createElement("textarea");
-    comments.rows = 4;
-    comments.required = true;
-    comments.id = "comment_" + studentCol;
-    comments.style.display = "none";
-    comments.placeholder =
-      "Please mention areas for improvement as marks < 50%. Comment will be shared with parent and tuition teacher!";
-    studentDiv.appendChild(comments);
-
-    const commentsErr = document.createElement("div");
-    commentsErr.className = "error";
-    commentsErr.id = "Errcomment_" + studentCol;
-
-    studentDiv.appendChild(commentsErr);
-
-    comments.addEventListener("change", function () {
-      validateTextarea(comments);
-    });
-
-    if (handwritingNeeded == 1) {
-      divider = document.createElement("hr");
-      divider.className = "divider";
-      studentDiv.appendChild(divider);
-
-      const handwriting_marks = document.createElement("input");
-      handwriting_marks.type = "number";
-      handwriting_marks.min = 0;
-      handwriting_marks.max = 10;
-      handwriting_marks.step = 0.1;
-      handwriting_marks.inputmode = "numeric";
-      handwriting_marks.value = ""; // pre-fill value
-      handwriting_marks.name = "marks_handwriting_10";
-      handwriting_marks.required = true;
-      handwriting_marks.className = "gg-name-exam";
-      handwriting_marks.id = "marks_handwriting_" + studentCol;
-      handwriting_marks.placeholder = "Handwriting Marks (0 to 10)";
-
-      studentDiv.appendChild(handwriting_marks);
-
-      const hwMarksErr = document.createElement("div");
-      hwMarksErr.className = "error";
-      hwMarksErr.id = "Errmarks_handwriting_" + studentCol;
-
-      studentDiv.appendChild(hwMarksErr);
-
-      handwriting_marks.addEventListener("change", () => {
-        validateNumber(handwriting_marks, 10);
-      });
-    }
-
-    if (feedbackNeeded == 1) {
-      divider = document.createElement("hr");
-      divider.className = "divider";
-      studentDiv.appendChild(divider);
-
-      const checkboxList = document.createElement("div");
-      checkboxList.className = "radio-container-student";
-      checkboxList.id = "feedbackList_" + studentCol; // optional but useful
-
-      // Append container first
-      studentDiv.appendChild(checkboxList);
-
-      const checkboxListHeading = document.createElement("div");
-      checkboxListHeading.className = "radio-heading-student";
-
-      checkboxList.appendChild(checkboxListHeading);
-
-      const fblabel = document.createElement("label");
-      fblabel.textContent = "Behaviour Feedback";
-      fblabel.className = "required";
-      checkboxListHeading.appendChild(fblabel);
-
-      const checkboxContent = document.createElement("div");
-      checkboxContent.className = "radio-content-without-flex";
-      checkboxContent.id = "dynamic-feedback-list";
-
-      feedbackArr.forEach((feedback, index) => {
-        const feedbackId = `feedback-${index}-${studentCol}`; // unique id per student
-
-        const option = document.createElement("div");
-        option.classList.add("options");
-
-        if (feedback.includes("Not")) {
-          option.innerHTML = `
-          <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
-          <label for="${feedbackId}" class="custom-label-student-red">${feedback}</label>
-        `;
-        } else {
-          option.innerHTML = `
-          <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
-          <label for="${feedbackId}" class="custom-label-student-green">${feedback}</label>
-        `;
-        }
-
-        checkboxContent.appendChild(option);
-      });
-
-      checkboxList.appendChild(checkboxContent);
-
-      const feedbackErr = document.createElement("div");
-      feedbackErr.className = "error";
-      feedbackErr.id = "Errfeedback_" + studentCol;
-
-      studentDiv.appendChild(feedbackErr);
-    }
-
-    container.appendChild(studentDiv);
-  });
-}
+// function showMarksWindow() {
+//   const examDetailDiv = document.getElementById("examFormHeading_div");
+//   const examDetailLabel = document.getElementById("examFormHeading_lbl");
+
+//   examDetailDiv.style.display = "block";
+//   examDetailLabel.innerHTML = `${selectedExamClass} : ${selectedExamSubject} : ${selectedExamDetails["examName"]}`;
+
+//   SHOW_SPECIFIC_DIV("examMarksContainer");
+//   const container = document.getElementById("studentsMarksWindow");
+//   container.className = "popup-content scrollable-content";
+//   container.innerHTML = ""; // Clear old UI
+//   let studentArray = selectedExamDetails["studentArr"];
+
+// studentArray.forEach((name) => {
+//   let studentName = name.split("%")[0];
+//   let studentCol = name.split("%")[1];
+//   let handwritingNeeded = selectedExamDetails["handwritingNeeded"];
+//   let feedbackNeeded = selectedExamDetails["feedbackNeeded"];
+//   let commentNeeded = selectedExamDetails["commentNeeded"];
+//   let marksArr = selectedExamDetails["maxMarks"].split("^");
+//   let maxMarks = marksArr[0];
+
+//   // UI
+//   const studentDiv = document.createElement("div");
+//   studentDiv.className = "student gg-exam-row-layout";
+//   const label = document.createElement("label");
+//   label.textContent = studentName;
+//   label.className = "required";
+
+//   studentDiv.appendChild(label);
+
+//   if (marksArr.length == 1) {
+//     let marks = 0;
+//     const input_marks = document.createElement("input");
+//     input_marks.type = "number";
+//     input_marks.min = 0;
+//     input_marks.max = maxMarks;
+//     input_marks.step = 0.1;
+//     input_marks.name = "marks_" + maxMarks;
+//     input_marks.required = true;
+//     input_marks.inputmode = "numeric";
+//     input_marks.value = ""; // pre-fill value
+//     input_marks.className = "gg-name-exam";
+//     input_marks.id = "marks_" + studentCol;
+//     input_marks.placeholder = "Enter Marks (0 to " + maxMarks + ")";
+
+//     studentDiv.appendChild(input_marks);
+
+//     const marksErr = document.createElement("div");
+//     marksErr.className = "error";
+//     marksErr.id = "Errmarks_" + studentCol;
+
+//     studentDiv.appendChild(marksErr);
+
+//     input_marks.addEventListener("change", () => {
+//       if (validateNumber(input_marks, maxMarks)) {
+//         let comment_divider = document.getElementById(
+//           "comment_divider_" + studentCol,
+//         );
+//         let commentBox = document.getElementById("comment_" + studentCol);
+//         let commentErr = document.getElementById("Err" + commentBox.id);
+
+//         marks = Number(input_marks.value.trim());
+
+//         if (marks < commentThresholdMarks * maxMarks && commentNeeded == 1) {
+//           comment_divider.style.display = "block";
+//           commentBox.value = "";
+//           commentBox.style.display = "block";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "block";
+//         } else {
+//           comment_divider.style.display = "none";
+//           commentBox.value = "";
+//           commentBox.style.display = "none";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "none";
+//         }
+//       }
+//     });
+//   } else {
+//     let wmarks = 0;
+//     let gmarks = 0;
+//     let lmarks = 0;
+
+//     const writing_input_marks = document.createElement("input");
+//     writing_input_marks.type = "number";
+//     writing_input_marks.min = 0;
+//     writing_input_marks.max = marksArr[1];
+//     writing_input_marks.step = 0.1;
+//     writing_input_marks.name = "marks_writing_" + marksArr[1];
+//     writing_input_marks.required = true;
+//     writing_input_marks.inputmode = "numeric";
+//     writing_input_marks.value = ""; // pre-fill value
+//     writing_input_marks.className = "gg-name-exam";
+//     writing_input_marks.id = "marks_writing_" + studentCol;
+//     writing_input_marks.placeholder =
+//       "Writing Marks (0 to " + marksArr[1] + ")";
+
+//     studentDiv.appendChild(writing_input_marks);
+
+//     const writeMarksErr = document.createElement("div");
+//     writeMarksErr.className = "error";
+//     writeMarksErr.id = "Errmarks_writing_" + studentCol;
+
+//     studentDiv.appendChild(writeMarksErr);
+
+//     writing_input_marks.addEventListener("change", () => {
+//       if (validateNumber(writing_input_marks, marksArr[1])) {
+//         let comment_divider = document.getElementById(
+//           "comment_divider_" + studentCol,
+//         );
+//         let commentBox = document.getElementById("comment_" + studentCol);
+//         let commentErr = document.getElementById("Err" + commentBox.id);
+
+//         wmarks = Number(writing_input_marks.value.trim());
+
+//         if (
+//           wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
+//           commentNeeded == 1
+//         ) {
+//           comment_divider.style.display = "block";
+//           commentBox.value = "";
+//           commentBox.style.display = "block";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "block";
+//         } else {
+//           comment_divider.style.display = "none";
+//           commentBox.value = "";
+//           commentBox.style.display = "none";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "none";
+//         }
+//       }
+//     });
+
+//     let divider = document.createElement("hr");
+//     divider.className = "divider";
+//     studentDiv.appendChild(divider);
+
+//     const grammar_input_marks = document.createElement("input");
+//     grammar_input_marks.type = "number";
+//     grammar_input_marks.min = 0;
+//     grammar_input_marks.max = marksArr[2];
+//     grammar_input_marks.step = 0.1;
+//     grammar_input_marks.value = ""; // pre-fill value
+//     grammar_input_marks.name = "marks_grammar_" + marksArr[2];
+//     grammar_input_marks.required = true;
+//     grammar_input_marks.inputmode = "numeric";
+//     grammar_input_marks.className = "gg-name-exam";
+//     grammar_input_marks.id = "marks_grammar_" + studentCol;
+//     grammar_input_marks.placeholder =
+//       "Grammar Marks (0 to " + marksArr[2] + ")";
+
+//     studentDiv.appendChild(grammar_input_marks);
+
+//     const gramMarksErr = document.createElement("div");
+//     gramMarksErr.className = "error";
+//     gramMarksErr.id = "Errmarks_grammar_" + studentCol;
+
+//     studentDiv.appendChild(gramMarksErr);
+
+//     grammar_input_marks.addEventListener("change", () => {
+//       if (validateNumber(grammar_input_marks, marksArr[2])) {
+//         let comment_divider = document.getElementById(
+//           "comment_divider_" + studentCol,
+//         );
+//         let commentBox = document.getElementById("comment_" + studentCol);
+//         let commentErr = document.getElementById("Err" + commentBox.id);
+
+//         gmarks = Number(grammar_input_marks.value.trim());
+
+//         if (
+//           wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
+//           commentNeeded == 1
+//         ) {
+//           comment_divider.style.display = "block";
+//           commentBox.value = "";
+//           commentBox.style.display = "block";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "block";
+//         } else {
+//           comment_divider.style.display = "none";
+//           commentBox.value = "";
+//           commentBox.style.display = "none";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "none";
+//         }
+//       }
+//     });
+
+//     divider = document.createElement("hr");
+//     divider.className = "divider";
+//     studentDiv.appendChild(divider);
+
+//     const literature_input_marks = document.createElement("input");
+//     literature_input_marks.type = "number";
+//     literature_input_marks.min = 0;
+//     literature_input_marks.max = marksArr[3];
+//     literature_input_marks.step = 0.1;
+//     literature_input_marks.inputmode = "numeric";
+//     literature_input_marks.value = ""; // pre-fill value
+//     literature_input_marks.className = "gg-name-exam";
+//     literature_input_marks.name = "marks_literature_" + marksArr[3];
+//     literature_input_marks.required = true;
+//     literature_input_marks.id = "marks_literature_" + studentCol;
+//     literature_input_marks.placeholder =
+//       "Literature Marks (0 to " + marksArr[3] + ")";
+
+//     studentDiv.appendChild(literature_input_marks);
+
+//     const litMarksErr = document.createElement("div");
+//     litMarksErr.className = "error";
+//     litMarksErr.id = "Errmarks_literature_" + studentCol;
+
+//     studentDiv.appendChild(litMarksErr);
+
+//     literature_input_marks.addEventListener("change", () => {
+//       if (validateNumber(literature_input_marks, marksArr[3])) {
+//         let comment_divider = document.getElementById(
+//           "comment_divider_" + studentCol,
+//         );
+//         let commentBox = document.getElementById("comment_" + studentCol);
+//         let commentErr = document.getElementById("Err" + commentBox.id);
+//         lmarks = Number(literature_input_marks.value.trim());
+
+//         if (
+//           wmarks + gmarks + lmarks < commentThresholdMarks * maxMarks &&
+//           commentNeeded == 1
+//         ) {
+//           comment_divider.style.display = "block";
+//           commentBox.value = "";
+//           commentBox.style.display = "block";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "block";
+//         } else {
+//           comment_divider.style.display = "none";
+//           commentBox.value = "";
+//           commentBox.style.display = "none";
+//           commentErr.innerHTML = "";
+//           commentErr.style.display = "none";
+//         }
+//       }
+//     });
+//   }
+
+//   // Adding comment box
+//   const commentDivider = document.createElement("hr");
+//   commentDivider.className = "divider";
+//   commentDivider.style.display = "none";
+//   commentDivider.id = "comment_divider_" + studentCol;
+
+//   studentDiv.appendChild(commentDivider);
+
+//   const comments = document.createElement("textarea");
+//   comments.rows = 4;
+//   comments.required = true;
+//   comments.id = "comment_" + studentCol;
+//   comments.style.display = "none";
+//   comments.placeholder =
+//     "Please mention areas for improvement as marks < 50%. Comment will be shared with parent and tuition teacher!";
+//   studentDiv.appendChild(comments);
+
+//   const commentsErr = document.createElement("div");
+//   commentsErr.className = "error";
+//   commentsErr.id = "Errcomment_" + studentCol;
+
+//   studentDiv.appendChild(commentsErr);
+
+//   comments.addEventListener("change", function () {
+//     validateTextarea(comments);
+//   });
+
+//   if (handwritingNeeded == 1) {
+//     divider = document.createElement("hr");
+//     divider.className = "divider";
+//     studentDiv.appendChild(divider);
+
+//     const handwriting_marks = document.createElement("input");
+//     handwriting_marks.type = "number";
+//     handwriting_marks.min = 0;
+//     handwriting_marks.max = 10;
+//     handwriting_marks.step = 0.1;
+//     handwriting_marks.inputmode = "numeric";
+//     handwriting_marks.value = ""; // pre-fill value
+//     handwriting_marks.name = "marks_handwriting_10";
+//     handwriting_marks.required = true;
+//     handwriting_marks.className = "gg-name-exam";
+//     handwriting_marks.id = "marks_handwriting_" + studentCol;
+//     handwriting_marks.placeholder = "Handwriting Marks (0 to 10)";
+
+//     studentDiv.appendChild(handwriting_marks);
+
+//     const hwMarksErr = document.createElement("div");
+//     hwMarksErr.className = "error";
+//     hwMarksErr.id = "Errmarks_handwriting_" + studentCol;
+
+//     studentDiv.appendChild(hwMarksErr);
+
+//     handwriting_marks.addEventListener("change", () => {
+//       validateNumber(handwriting_marks, 10);
+//     });
+//   }
+
+//   if (feedbackNeeded == 1) {
+//     divider = document.createElement("hr");
+//     divider.className = "divider";
+//     studentDiv.appendChild(divider);
+
+//     const checkboxList = document.createElement("div");
+//     checkboxList.className = "radio-container-student";
+//     checkboxList.id = "feedbackList_" + studentCol; // optional but useful
+
+//     // Append container first
+//     studentDiv.appendChild(checkboxList);
+
+//     const checkboxListHeading = document.createElement("div");
+//     checkboxListHeading.className = "radio-heading-student";
+
+//     checkboxList.appendChild(checkboxListHeading);
+
+//     const fblabel = document.createElement("label");
+//     fblabel.textContent = "Behaviour Feedback";
+//     fblabel.className = "required";
+//     checkboxListHeading.appendChild(fblabel);
+
+//     const checkboxContent = document.createElement("div");
+//     checkboxContent.className = "radio-content-without-flex";
+//     checkboxContent.id = "dynamic-feedback-list";
+
+//     feedbackArr.forEach((feedback, index) => {
+//       const feedbackId = `feedback-${index}-${studentCol}`; // unique id per student
+
+//       const option = document.createElement("div");
+//       option.classList.add("options");
+
+//       if (feedback.includes("Not")) {
+//         option.innerHTML = `
+//         <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
+//         <label for="${feedbackId}" class="custom-label-student-red">${feedback}</label>
+//       `;
+//       } else {
+//         option.innerHTML = `
+//         <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
+//         <label for="${feedbackId}" class="custom-label-student-green">${feedback}</label>
+//       `;
+//       }
+
+//       checkboxContent.appendChild(option);
+//     });
+
+//     checkboxList.appendChild(checkboxContent);
+
+//     const feedbackErr = document.createElement("div");
+//     feedbackErr.className = "error";
+//     feedbackErr.id = "Errfeedback_" + studentCol;
+
+//     studentDiv.appendChild(feedbackErr);
+
+//     /* ---------- Mutually Exclusive Logic ---------- */
+
+//     const checkboxes = checkboxContent.querySelectorAll(
+//       'input[type="checkbox"]',
+//     );
+
+//     if (checkboxes.length > 1) {
+//       const firstCheckbox = checkboxes[0];
+//       const otherCheckboxes = Array.from(checkboxes).slice(1);
+
+//       function updateCheckboxState() {
+//         const firstChecked = firstCheckbox.checked;
+//         const anyOtherChecked = otherCheckboxes.some((cb) => cb.checked);
+
+//         if (firstChecked) {
+//           // Disable and uncheck all others
+//           otherCheckboxes.forEach((cb) => {
+//             cb.checked = false;
+//             cb.disabled = true;
+//           });
+//           firstCheckbox.disabled = false;
+//         } else if (anyOtherChecked) {
+//           // Disable first
+//           firstCheckbox.checked = false;
+//           firstCheckbox.disabled = true;
+
+//           // Keep others enabled
+//           otherCheckboxes.forEach((cb) => {
+//             cb.disabled = false;
+//           });
+//         } else {
+//           // Nothing selected -> enable all
+//           firstCheckbox.disabled = false;
+//           otherCheckboxes.forEach((cb) => {
+//             cb.disabled = false;
+//           });
+//         }
+//       }
+//       // Listen to all checkboxes
+//       checkboxes.forEach((cb) => {
+//         cb.addEventListener("change", updateCheckboxState);
+//       });
+
+//       // Initialize state
+//       updateCheckboxState();
+//     }
+//   }
+
+//   container.appendChild(studentDiv);
+// });
+// }
 
 async function openJapaWindow(in_flag = 0) {
   japaFlag = in_flag;
@@ -1237,143 +1256,143 @@ function resetExamForm() {
   return;
 }
 
-async function validateExamForm() {
-  let valid_status = true;
-  inputMarksDetails["class"] = selectedExamClass;
-  inputMarksDetails["subject"] = selectedExamSubject;
-  inputMarksDetails["row"] = selectedExamDetails["row"];
-  inputMarksDetails["handwritingNeeded"] =
-    selectedExamDetails["handwritingNeeded"];
-  inputMarksDetails["teacher"] = selectedTeacher;
-  inputMarksDetails["ctReason"] = "";
-  inputMarksDetails["feedbackNeeded"] = selectedExamDetails["feedbackNeeded"];
-  inputMarksDetails["marks"] = {};
-  let studentCol = 0;
+// async function validateExamForm() {
+//   let valid_status = true;
+//   inputMarksDetails["class"] = selectedExamClass;
+//   inputMarksDetails["subject"] = selectedExamSubject;
+//   inputMarksDetails["row"] = selectedExamDetails["row"];
+//   inputMarksDetails["handwritingNeeded"] =
+//     selectedExamDetails["handwritingNeeded"];
+//   inputMarksDetails["teacher"] = selectedTeacher;
+//   inputMarksDetails["ctReason"] = "";
+//   inputMarksDetails["feedbackNeeded"] = selectedExamDetails["feedbackNeeded"];
+//   inputMarksDetails["marks"] = {};
+//   let studentCol = 0;
 
-  // Validate all marks
-  document.querySelectorAll('input[name^="marks_"]').forEach((input_marks) => {
-    let maxMarksArr = input_marks.name.split("_");
-    let idSplitArr = input_marks.id.split("_");
-    studentCol = idSplitArr[idSplitArr.length - 1];
+//   // Validate all marks
+//   document.querySelectorAll('input[name^="marks_"]').forEach((input_marks) => {
+//     let maxMarksArr = input_marks.name.split("_");
+//     let idSplitArr = input_marks.id.split("_");
+//     studentCol = idSplitArr[idSplitArr.length - 1];
 
-    if (inputMarksDetails["marks"][studentCol] == null)
-      inputMarksDetails["marks"][studentCol] = {
-        total: 0,
-      };
+//     if (inputMarksDetails["marks"][studentCol] == null)
+//       inputMarksDetails["marks"][studentCol] = {
+//         total: 0,
+//       };
 
-    validateNumber(input_marks, Number(maxMarksArr[maxMarksArr.length - 1]));
+//     validateNumber(input_marks, Number(maxMarksArr[maxMarksArr.length - 1]));
 
-    if (idSplitArr.length == 2 || idSplitArr[1] == "writing") {
-      console.log(
-        "Checking feedback for student: " +
-          studentCol +
-          " with id: " +
-          input_marks.id,
-      );
-      let feedbackList = document.getElementById(`feedbackList_${studentCol}`);
-      if (feedbackList == null) {
-        inputMarksDetails["marks"][studentCol]["feedback"] = [];
-      } else {
-        let checkboxes = feedbackList.querySelectorAll(
-          'input[type="checkbox"][name="feedbackList"]',
-        );
+//     if (idSplitArr.length == 2 || idSplitArr[1] == "writing") {
+//       console.log(
+//         "Checking feedback for student: " +
+//           studentCol +
+//           " with id: " +
+//           input_marks.id,
+//       );
+//       let feedbackList = document.getElementById(`feedbackList_${studentCol}`);
+//       if (feedbackList == null) {
+//         inputMarksDetails["marks"][studentCol]["feedback"] = [];
+//       } else {
+//         let checkboxes = feedbackList.querySelectorAll(
+//           'input[type="checkbox"][name="feedbackList"]',
+//         );
 
-        const errorDiv = document.getElementById(`Errfeedback_${studentCol}`);
+//         const errorDiv = document.getElementById(`Errfeedback_${studentCol}`);
 
-        const isAnyChecked = [...checkboxes].some((cb) => cb.checked);
+//         const isAnyChecked = [...checkboxes].some((cb) => cb.checked);
 
-        if (!isAnyChecked)
-          errorDiv.innerHTML = "Please tick at least one checkbox!";
-        else {
-          inputMarksDetails["marks"][studentCol]["feedback"] = [...checkboxes]
-            .filter((cb) => cb.checked)
-            .map((cb) => cb.value);
-          errorDiv.innerHTML = "";
-        }
-      }
-    }
+//         if (!isAnyChecked)
+//           errorDiv.innerHTML = "Please tick at least one checkbox!";
+//         else {
+//           inputMarksDetails["marks"][studentCol]["feedback"] = [...checkboxes]
+//             .filter((cb) => cb.checked)
+//             .map((cb) => cb.value);
+//           errorDiv.innerHTML = "";
+//         }
+//       }
+//     }
 
-    if (idSplitArr.length == 2) {
-      if (input_marks.value.trim() != "")
-        inputMarksDetails["marks"][studentCol]["total"] = Number(
-          input_marks.value.trim(),
-        );
-    } else {
-      if (input_marks.value.trim() != "") {
-        inputMarksDetails["marks"][studentCol][idSplitArr[1]] = Number(
-          input_marks.value.trim(),
-        );
-        if (idSplitArr[1] != "handwriting")
-          inputMarksDetails["marks"][studentCol]["total"] += Number(
-            input_marks.value.trim(),
-          );
-      }
-    }
-  });
+//     if (idSplitArr.length == 2) {
+//       if (input_marks.value.trim() != "")
+//         inputMarksDetails["marks"][studentCol]["total"] = Number(
+//           input_marks.value.trim(),
+//         );
+//     } else {
+//       if (input_marks.value.trim() != "") {
+//         inputMarksDetails["marks"][studentCol][idSplitArr[1]] = Number(
+//           input_marks.value.trim(),
+//         );
+//         if (idSplitArr[1] != "handwriting")
+//           inputMarksDetails["marks"][studentCol]["total"] += Number(
+//             input_marks.value.trim(),
+//           );
+//       }
+//     }
+//   });
 
-  document.querySelectorAll('textarea[id^="comment"]').forEach((comment) => {
-    if (comment.style.display == "block") {
-      validateTextarea(comment);
-    }
-    console.log(
-      "Setting comment for: " +
-        comment.id.split("_")[1] +
-        " -> " +
-        comment.value.trim(),
-    );
-    inputMarksDetails["marks"][Number(comment.id.split("_")[1])]["comment"] =
-      comment.value.trim();
-  });
+//   document.querySelectorAll('textarea[id^="comment"]').forEach((comment) => {
+//     if (comment.style.display == "block") {
+//       validateTextarea(comment);
+//     }
+//     console.log(
+//       "Setting comment for: " +
+//         comment.id.split("_")[1] +
+//         " -> " +
+//         comment.value.trim(),
+//     );
+//     inputMarksDetails["marks"][Number(comment.id.split("_")[1])]["comment"] =
+//       comment.value.trim();
+//   });
 
-  document.querySelectorAll('[id^="Err"]').forEach((e) => {
-    if (e.innerHTML.trim() != "") {
-      valid_status = false;
-      // console.log(e.innerHTML.trim())
-      // console.log(e.id)
-    }
-  });
+//   document.querySelectorAll('[id^="Err"]').forEach((e) => {
+//     if (e.innerHTML.trim() != "") {
+//       valid_status = false;
+//       // console.log(e.innerHTML.trim())
+//       // console.log(e.id)
+//     }
+//   });
 
-  if (valid_status) {
-    SHOW_CONFIRMATION_POPUP(
-      "Are you sure you want to submit the marks?",
-      submitExamMarks,
-    );
-  }
+//   if (valid_status) {
+//     SHOW_CONFIRMATION_POPUP(
+//       "Are you sure you want to submit the marks?",
+//       submitExamMarks,
+//     );
+//   }
 
-  return valid_status;
-}
+//   return valid_status;
+// }
 
-async function submitExamMarks() {
-  console.log(inputMarksDetails);
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SUBMIT_EXAM_MARKS,
-    inputMarksDetails,
-  );
+// async function submitExamMarks() {
+//   console.log(inputMarksDetails);
+//   const outputData = await CALL_API(
+//     API_TYPE_CONSTANT.SUBMIT_EXAM_MARKS,
+//     inputMarksDetails,
+//   );
 
-  if (
-    outputData?.status &&
-    outputData.response &&
-    typeof outputData.response === "string"
-  ) {
-    console.log(outputData.response);
-    if (outputData.response == "ok")
-      SHOW_SUCCESS_POPUP("Marks submitted Successfully!", homePageClick);
-    else if (outputData.response == "okct")
-      SHOW_SUCCESS_POPUP("Response submitted Successfully!", homePageClick);
-    else
-      SHOW_ERROR_POPUP(
-        "Unable to submit marks for: " +
-          selectedExamDetails["examName"] +
-          "!!\n\n" +
-          outputData.response.split("ERR: ")[1],
-      );
-  } else
-    SHOW_ERROR_POPUP(
-      "Unable to submit marks for: " + selectedExamDetails["examName"] + "!!",
-    );
+//   if (
+//     outputData?.status &&
+//     outputData.response &&
+//     typeof outputData.response === "string"
+//   ) {
+//     console.log(outputData.response);
+//     if (outputData.response == "ok")
+//       SHOW_SUCCESS_POPUP("Marks submitted Successfully!", homePageClick);
+//     else if (outputData.response == "okct")
+//       SHOW_SUCCESS_POPUP("Response submitted Successfully!", homePageClick);
+//     else
+//       SHOW_ERROR_POPUP(
+//         "Unable to submit marks for: " +
+//           selectedExamDetails["examName"] +
+//           "!!\n\n" +
+//           outputData.response.split("ERR: ")[1],
+//       );
+//   } else
+//     SHOW_ERROR_POPUP(
+//       "Unable to submit marks for: " + selectedExamDetails["examName"] + "!!",
+//     );
 
-  return;
-}
+//   return;
+// }
 
 function resetFormGenData(moveAway = 0) {
   if (moveAway == 0)

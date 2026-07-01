@@ -10,6 +10,7 @@
 
     <link rel="stylesheet" href="StylesCommon.css" />
     <link rel="stylesheet" href="StylesYearlyAdmissionKitSpecific.css" />
+    <link rel="stylesheet" href="StylesExam.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -935,19 +936,12 @@
           </div>
           <div id="studentsMarksWindow"></div>
           <div class="button-row">
-            <button
-              class="red"
-              onclick="
-                SHOW_CONFIRMATION_POPUP(
-                  'Do you want to reset form?',
-                  resetExamForm,
-                )
-              "
-            >
-              Reset
-            </button>
             <button class="purple" onclick="checkSelectedTest(1)">Back</button>
-            <button class="green" onclick="validateExamForm()">Submit</button>
+            <button id="clearStudentBtn" class="red">Clear Form</button>
+
+            <button id="saveStudentBtn" class="yellow">Save Student</button>
+
+            <button id="submitAllBtn" class="green" disabled>Submit</button>
           </div>
         </div>
       </div>
@@ -1426,5 +1420,6 @@
     <script src="ScriptSplEntrySystem.js"></script>
     <script src="ScriptFeedback.js"></script>
     <script src="ScriptExamination.js"></script>
+    <script src="ScriptNewExam.js"></script>
   </body>
 </html>
