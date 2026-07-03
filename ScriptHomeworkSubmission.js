@@ -196,8 +196,11 @@ async function openGenerateHomeworkWindow() {
       );
       homePageClick();
     } else {
-      populateHWClassDropdown();
-      SHOW_SPECIFIC_DIV("raiseHWContainer");
+      if (populateHWClassDropdown() > 0) SHOW_SPECIFIC_DIV("raiseHWContainer");
+      else {
+        SHOW_INFO_POPUP("School time over for eligible classes!");
+        homePageClick();
+      }
     }
   } else {
     SHOW_ERROR_POPUP(
@@ -211,6 +214,26 @@ async function openGenerateHomeworkWindow() {
 
 // Function to populate the class dropdown for examination
 function populateHWClassDropdown() {
+  let ret_flag = 0;
+  let school_end_time_1 = "13:20";
+  let school_end_time_2 = "14:35";
+  let school_end_time_map = {
+    "Sri Narayana": school_end_time_1,
+    "Sri Madhava": school_end_time_1,
+    "Sri Govinda": school_end_time_1,
+    "Sri Vishnu": school_end_time_1,
+    "Sri Madhusudana": school_end_time_1,
+    "Sri Trivikrama": school_end_time_2,
+    "Sri Vamana": school_end_time_2,
+    "Sri Sridhara": school_end_time_2,
+    "Sri Hrishikesha": school_end_time_2,
+    "Sri Padmanabha": school_end_time_2,
+    "Sri Damodara": school_end_time_2,
+    "Sri Vasudeva": school_end_time_2,
+  };
+
+  let now = new Date();
+  let currentMinutes = now.getHours() * 60 + now.getMinutes();
   const hwclassDropdown = document.getElementById("raiseHWclass");
   const hwsubjectDropdown = document.getElementById("raiseHWsubject");
 
@@ -230,11 +253,25 @@ function populateHWClassDropdown() {
   hwsubjectDropdown.appendChild(defaultSubject);
 
   for (const className in eligibleHWList) {
+    if (school_end_time_map[className] == null) continue;
+    let [h, m] = school_end_time_map[className].split(":").map(Number);
+    let endMinutes = h * 60 + m;
+    if (currentMinutes > endMinutes) {
+      console.log(
+        "School Time over for Today for class: " +
+          className +
+          "! Cannot submit today's work!",
+      );
+      continue;
+    }
+    ret_flag++;
     const option = document.createElement("option");
     option.value = className;
     option.textContent = className;
     hwclassDropdown.appendChild(option);
   }
+
+  return ret_flag;
 }
 
 //  Function to populate the subject dropdown based on the selected class for examination
