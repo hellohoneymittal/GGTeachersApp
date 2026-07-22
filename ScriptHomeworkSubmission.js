@@ -426,7 +426,7 @@ async function sendTodaysWorkBackend() {
   return;
 }
 
-function showLPWindow() {
+function showLPWindow(back_disabled = 0) {
   const examDetailDiv = document.getElementById("selectLPHeading_div");
   const examDetailLabel = document.getElementById("selectLPHeading_lbl");
   const dynamic_option_element = document.getElementById("dynamic-lp-list");
@@ -442,6 +442,9 @@ function showLPWindow() {
     ).length > 0;
   let i;
   let next_button = document.getElementById("nextButtonLP");
+  let back_button = document.getElementById("backButtonLP");
+
+  if (back_disabled == 1) back_button.disabled = true;
 
   next_button.disabled = true;
   next_button.innerHTML = "Submit";

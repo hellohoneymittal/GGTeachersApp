@@ -615,9 +615,7 @@
         <div class="popup-content scrollable-content">
           <div id="classDataContainer"></div>
           <div class="button-row">
-            <button class="green" id="homePage" onclick="homePageClick()">
-              Home
-            </button>
+            <button class="green" id="japaNext">Next</button>
             <button
               class="purple"
               id="downloadJapaReport"
@@ -784,7 +782,11 @@
             <button class="purple" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
               Home
             </button>
-            <button class="red" onclick="openGenerateHomeworkWindow()">
+            <button
+              class="red"
+              id="backButtonLP"
+              onclick="openGenerateHomeworkWindow()"
+            >
               Back
             </button>
             <button class="green" id="nextButtonLP" onclick="" disabled>
