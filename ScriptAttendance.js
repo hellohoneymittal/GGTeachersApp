@@ -363,7 +363,14 @@ function populateSubjectDropdown(selectedClass) {
 
 function showJapaWindow() {
   let japaSubButton = document.getElementById("japaSubmitButton");
+
   japaSubButton.disabled = true;
+
+  if (lessonPlanFlag == 1) {
+    japaSubButton.innerHTML = "Fill Today's Work";
+    japaSubButton.onclick = () => showLPWindow(1);
+  } else japaSubButton.onclick = () => saveGGJapaData();
+
   SHOW_SPECIFIC_DIV("studentsJapaContainer");
   const container = document.getElementById("studentsJapaWindow");
   container.innerHTML = ""; // Clear old UI

@@ -392,6 +392,7 @@ function submitLP(in_flag = 2) {
 
 async function sendTodaysWorkBackend() {
   console.log(selectedLessonPlan);
+  let japaSubButton = document.getElementById("japaSubmitButton");
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.SUBMIT_TODAYS_WORK,
     selectedLessonPlan,
@@ -404,7 +405,16 @@ async function sendTodaysWorkBackend() {
   ) {
     console.log(outputData.response);
     if (outputData.response == "ok")
-      SHOW_SUCCESS_POPUP("Today's work submitted Successfully!", homePageClick);
+      SHOW_SUCCESS_POPUP(
+        "Today's work submitted Successfully!",
+        lessonPlanFlag == 0
+          ? homePageClick
+          : () => {
+              japaSubButton.innerHTML = "Submit";
+              japaSubButton.onclick = saveGGJapaData;
+              SHOW_SPECIFIC_DIV("studentsJapaContainer");
+            },
+      );
     else
       SHOW_ERROR_POPUP(
         "Unable to submit today's work for: " +
@@ -423,7 +433,12 @@ async function sendTodaysWorkBackend() {
         "!!",
     );
 
-  return;
+  if (lessonPlanFlag == 0) return;
+  else {
+    japaSubButton.innerHTML = "Submit";
+    japaSubButton.onclick = saveGGJapaData;
+    SHOW_SPECIFIC_DIV("studentsJapaContainer");
+  }
 }
 
 function showLPWindow(back_disabled = 0) {
