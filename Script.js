@@ -684,7 +684,7 @@ async function callMarkAttendanceClick() {
           }
         }
       }
-
+      //lessonPlanFlag == 1 ? showLPWindow(1) : showJapaWindow();
       showJapaWindow();
     });
   } else {
@@ -709,13 +709,13 @@ function populateJapaResultDataView(data) {
   const container = document.getElementById("classDataContainer");
   const japaNextButton = document.getElementById("japaNext");
 
-  if (lessonPlanFlag == 0) {
-    japaNextButton.innerHTML = "Home";
-    japaNextButton.addEventListener("click", homePageClick);
-  } else {
-    japaNextButton.innerHTML = "Fill Today's Work";
-    japaNextButton.addEventListener("click", () => showLPWindow(1));
-  }
+  // if (lessonPlanFlag == 0) {
+  //   japaNextButton.innerHTML = "Home";
+  //   japaNextButton.addEventListener("click", homePageClick);
+  // } else {
+  //   japaNextButton.innerHTML = "Fill Today's Work";
+  //   japaNextButton.addEventListener("click", () => showLPWindow(1));
+  // }
 
   // Group by className (optional — in case you later get multiple classes)
   const grouped = {};
