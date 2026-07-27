@@ -505,7 +505,7 @@ async function openAttendanceWindow() {
   let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = [];
+  let ignoreTeachers = ["Nirguna Madhuri Mataji"];
   let result = 0;
 
   if (now.getDay() === 0) {
@@ -513,10 +513,10 @@ async function openAttendanceWindow() {
     return;
   }
 
-  if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
-    SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
-    return;
-  }
+  // if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
+  //   SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
+  //   return;
+  // }
 
   //Check current location
   if (!ignoreTeachers.includes(selectedTeacher)) {
