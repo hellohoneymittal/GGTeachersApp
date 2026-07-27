@@ -150,6 +150,8 @@ async function openLeavesWindow() {
 
     let minStartStr = minStart.toLocaleDateString("en-CA").split("T")[0];
 
+    console.log(currentMinutes + " -> " + startMinutes + " -> " + minStartStr);
+
     // 🔹 Apply min to start date
     startInput.min = minStartStr;
 
