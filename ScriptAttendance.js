@@ -363,13 +363,9 @@ function populateSubjectDropdown(selectedClass) {
 
 function showJapaWindow() {
   let japaSubButton = document.getElementById("japaSubmitButton");
+  let popup_cnt = 0;
 
   japaSubButton.disabled = true;
-
-  if (lessonPlanFlag == 1) {
-    japaSubButton.innerHTML = "Fill Today's Work";
-    japaSubButton.onclick = () => showLPWindow(1);
-  } else japaSubButton.onclick = () => saveGGJapaData();
 
   SHOW_SPECIFIC_DIV("studentsJapaContainer");
   const container = document.getElementById("studentsJapaWindow");
@@ -436,6 +432,10 @@ function showJapaWindow() {
 
     // --- START/PAUSE/RESUME ---
     startBtn.addEventListener("click", () => {
+      if (popup_cnt == 0 && lessonPlanFlag == 1) {
+        showLPWindow(1);
+        popup_cnt = 1;
+      }
       japaSubButton.disabled = false;
       if (!timerIntervalGG) {
         startTime = Date.now();
