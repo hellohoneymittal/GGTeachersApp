@@ -363,13 +363,9 @@ function populateSubjectDropdown(selectedClass) {
 
 function showJapaWindow() {
   let japaSubButton = document.getElementById("japaSubmitButton");
+  let popup_cnt = 0;
 
   japaSubButton.disabled = true;
-
-  if (lessonPlanFlag == 1) {
-    japaSubButton.innerHTML = "Fill Today's Work";
-    japaSubButton.onclick = () => showLPWindow(1);
-  } else japaSubButton.onclick = () => saveGGJapaData();
 
   SHOW_SPECIFIC_DIV("studentsJapaContainer");
   const container = document.getElementById("studentsJapaWindow");
@@ -436,6 +432,10 @@ function showJapaWindow() {
 
     // --- START/PAUSE/RESUME ---
     startBtn.addEventListener("click", () => {
+      if (popup_cnt == 0 && lessonPlanFlag == 1) {
+        showLPWindow(1);
+        popup_cnt = 1;
+      }
       japaSubButton.disabled = false;
       if (!timerIntervalGG) {
         startTime = Date.now();
@@ -505,7 +505,7 @@ async function openAttendanceWindow() {
   let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = ["Nirguna Madhuri Mataji"];
+  let ignoreTeachers = [];
   let result = 0;
 
   if (now.getDay() === 0) {
@@ -513,10 +513,10 @@ async function openAttendanceWindow() {
     return;
   }
 
-  // if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
-  //   SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
-  //   return;
-  // }
+  if (currentMinutes > endMinutes || currentMinutes < startMinutes) {
+    SHOW_INFO_POPUP("⚠️ Cannot mark attendance outside of school hours!");
+    return;
+  }
 
   //Check current location
   if (!ignoreTeachers.includes(selectedTeacher)) {

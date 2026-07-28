@@ -410,7 +410,7 @@ async function sendTodaysWorkBackend() {
         lessonPlanFlag == 0
           ? homePageClick
           : () => {
-              japaSubButton.innerHTML = "Submit";
+              japaSubButton.innerHTML = "Submit Japa";
               japaSubButton.onclick = saveGGJapaData;
               SHOW_SPECIFIC_DIV("studentsJapaContainer");
             },
@@ -523,6 +523,7 @@ function showLPWindow(back_disabled = 0) {
     }
   }
 
+  SHOW_INFO_POPUP("Japa STARTED!\n\nPlease fill Today's Work!");
   SHOW_SPECIFIC_DIV("selectLPContainer");
 }
 
