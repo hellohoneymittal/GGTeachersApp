@@ -29,8 +29,25 @@ function buildFieldValueGrid(formId) {
     if (el.tagName === "INPUT" && el.type === "date") {
       gridData.push({
         field: label,
-        value: convertDate(el.value),
+        value: convertDateNew(el.value),
       });
+
+      if (label == "End Date") {
+        const startInput = document.getElementById("startdate");
+        const endInput = document.getElementById("enddate");
+        const reason = document.getElementById("leaveReason");
+
+        const startDate = new Date(startInput.value);
+        const endDate = new Date(endInput.value);
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const diffInDays = Math.round((endDate - startDate) / msPerDay) + 1;
+
+        gridData.push({
+          field: "Number of Days",
+          value: diffInDays,
+        });
+      }
       return;
     }
 
@@ -332,9 +349,7 @@ async function submitLeaves() {
           outputData.response.split("ERR: ")[1],
       );
   } else
-    SHOW_ERROR_POPUP(
-      "Unable to submit marks for: " + selectedExamDetails["examName"] + "!!",
-    );
+    SHOW_ERROR_POPUP("Unable to submit leaves for: " + selectedTeacher + "!!");
 
   return;
 }
