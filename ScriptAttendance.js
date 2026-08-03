@@ -262,7 +262,13 @@ function populateStudentMultiSelectDropdown(outId, inArr, name) {
     const option = document.createElement("div");
     option.classList.add("options");
 
-    option.innerHTML = `
+    if (student.includes(" - L"))
+      option.innerHTML = `
+      <input type="checkbox" id="${studentId} - L" name="${name}" value="${student}" class="custom-checkbox" disabled>
+      <label for="${studentId}" class="disabled-label">${student.split(" - ")[0]}</label>
+    `;
+    else
+      option.innerHTML = `
       <input type="checkbox" id="${studentId}" name="${name}" value="${student}" class="custom-checkbox">
       <label for="${studentId}" class="custom-label-student">${student}</label>
     `;
@@ -505,7 +511,7 @@ async function openAttendanceWindow() {
   let startMinutes = h * 60 + m;
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
-  let ignoreTeachers = [];
+  let ignoreTeachers = ["Hemangi Mataji"];
   let result = 0;
 
   if (now.getDay() === 0) {
