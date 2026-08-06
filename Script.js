@@ -635,6 +635,7 @@ async function callMarkAttendanceClick() {
     studentList: separatedStudentList,
     //lessonPlan: lessonPlanStr,
     attendance: attendanceStr,
+    sendWhatsappFlag: 0,
   };
 
   const outputData = await CALL_API(
@@ -643,6 +644,8 @@ async function callMarkAttendanceClick() {
   );
 
   if (outputData?.status) {
+    apiPayload["sendWhatsappFlag"] = 1;
+    CALL_API_WITHOUT_LOADING(API_TYPE_CONSTANT.SAVE_ATTENDANCE, apiPayload);
     SHOW_SUCCESS_POPUP("Attendance marked successfully!", async () => {
       if (selectedClass.includes("Keshava") || japaFlag == 1) {
         homePageClick();
