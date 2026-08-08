@@ -239,7 +239,7 @@ function renderStudentList() {
         </span>
 
         <span>
-        ${student.name}
+        ${student.name.split("_")[1]}
         </span>
         `;
 
