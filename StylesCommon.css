@@ -1809,7 +1809,7 @@ input[type="radio"] {
 .student-row {
   display: flex;
   gap: 15px;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px dashed #ddd;

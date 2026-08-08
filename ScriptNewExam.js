@@ -66,6 +66,7 @@ function updateCommentVisibility(
   console.log(`For comments on: ${studentCol}`);
 
   if (
+    totalMarks >= 0 &&
     commentNeeded == 1 &&
     (totalMarks < commentThresholdMarks * maxMarks || hasComment)
   ) {
@@ -303,10 +304,10 @@ function renderStudent() {
 
   const studentName = student.name;
   const studentCol = student.col;
-  let marks = 0;
-  let wmarks = 0;
-  let gmarks = 0;
-  let lmarks = 0;
+  let marks = -1;
+  let wmarks = -1;
+  let gmarks = -1;
+  let lmarks = -1;
 
   const panel = document.getElementById("studentPanel");
 
@@ -343,9 +344,9 @@ function renderStudent() {
     input_marks.id = "marks_" + studentCol;
     input_marks.placeholder = "Enter Marks (0 to " + maxMarks + ")";
 
-    if (student.data.input_marks !== undefined) {
-      input_marks.value = student.data.input_marks;
-      marks = Number(student.data.input_marks);
+    if (student.data.total !== undefined) {
+      input_marks.value = student.data.total;
+      marks = Number(student.data.total);
     }
 
     studentDiv.appendChild(input_marks);
@@ -881,16 +882,21 @@ function validateCurrentStudent() {
   const student = studentList[currentStudentIndex];
   const studentCol = student.col;
 
-  // Reset previous data
-  student.data = {
-    total: 0,
-    feedback: [],
-    comment: "",
-  };
+  // Keep existing data
+  if (!student.data) {
+    student.data = {};
+  }
 
-  /* ==========================
-     MARKS
-  ========================== */
+  // Reset only values that are calculated during validation
+  student.data.total = 0;
+  student.data.feedback = [];
+  student.data.comment = "";
+
+  /*
+   * ==========================
+   * MARKS
+   * ==========================
+   */
 
   const panel = document.getElementById("studentPanel");
 
@@ -918,9 +924,11 @@ function validateCurrentStudent() {
     }
   });
 
-  /* ==========================
-     FEEDBACK
-  ========================== */
+  /*
+   * ==========================
+   * FEEDBACK
+   * ==========================
+   */
 
   const feedbackList = document.getElementById(`feedbackList_${studentCol}`);
 
@@ -942,21 +950,28 @@ function validateCurrentStudent() {
     }
   }
 
-  /* ==========================
-     COMMENTS
-  ========================== */
+  /*
+   * ==========================
+   * COMMENTS
+   * ==========================
+   */
 
   panel.querySelectorAll('textarea[id^="comment"]').forEach((comment) => {
     if (comment.style.display == "block") {
       validateTextarea(comment);
-    }
 
-    student.data.comment = comment.value.trim();
+      student.data.comment = comment.value.trim();
+    } else {
+      // Comment isn't required when hidden
+      student.data.comment = "";
+    }
   });
 
-  /* ==========================
-     CHECK ERRORS
-  ========================== */
+  /*
+   * ==========================
+   * CHECK ERRORS
+   * ==========================
+   */
 
   panel.querySelectorAll('[id^="Err"]').forEach((err) => {
     if (err.innerHTML.trim() != "") {
