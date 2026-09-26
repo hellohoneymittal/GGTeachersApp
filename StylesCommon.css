@@ -2814,3 +2814,188 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   margin-bottom: 20px;
 }
+
+/* =========================================================
+   STUDENT FEEDBACK REPORT
+========================================================= */
+
+.feedback-report-message {
+  text-align: center;
+  padding: 15px 8px;
+  color: #777;
+  font-size: 13px;
+}
+
+/* =========================
+   REPORT HEADER
+========================= */
+
+.feedback-report-header {
+  margin: 10px 0;
+  padding: 9px 10px;
+  background: #52609a;
+  border: 1px solid #d3d7e2;
+  border-radius: 5px;
+  color: white;
+}
+
+.feedback-report-header h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+}
+
+.feedback-report-exam {
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+.feedback-report-teacher {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* =========================
+   SUMMARY
+========================= */
+
+.feedback-report-section-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 12px 0 6px;
+  text-align: left;
+}
+
+.feedback-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+}
+
+.feedback-summary-table th,
+.feedback-summary-table td {
+  border: 1px solid #ccc;
+  padding: 8px 6px 10px 6px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.feedback-summary-table th {
+  background: #52609a;
+  font-weight: bold;
+}
+
+.feedback-good {
+  color: #24752c;
+  font-weight: bold;
+}
+
+.feedback-no-good {
+  color: #a42c2c;
+  font-weight: bold;
+}
+
+/* =========================
+   QUESTION-WISE TABLE
+========================= */
+
+.feedback-question-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.feedback-question-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.feedback-question-table th,
+.feedback-question-table td {
+  border: 1px solid #ccc;
+  padding: 5px 5px 5px 5px;
+  line-height: 1.2;
+  vertical-align: top;
+  font-size: 16px;
+}
+
+.feedback-question-table th {
+  background: #52609a;
+  text-align: center;
+}
+
+.feedback-question-table td:first-child {
+  width: 8%;
+  text-align: center;
+  padding: 0px 5px 18px;
+}
+
+.feedback-question-table th:first-child {
+  width: 8%;
+  text-align: center;
+}
+
+.feedback-question-table td:nth-child(2) {
+  width: 64%;
+  text-align: left;
+  padding: 0px 5px 18px;
+}
+
+.feedback-question-table td:nth-child(3),
+.feedback-question-table td:nth-child(4) {
+  width: 14%;
+  text-align: center;
+  padding: 0px 5px 18px;
+}
+
+.feedback-question-table th:nth-child(3),
+.feedback-question-table th:nth-child(4) {
+  width: 14%;
+  text-align: center;
+}
+
+/* =========================
+   EXAM BREAKDOWN
+   Used when ALL EXAMS selected
+========================= */
+
+.feedback-exam-breakdown {
+  margin-top: 14px;
+}
+
+.feedback-exam-row {
+  border: 1px solid #d2d2d2;
+  border-radius: 5px;
+  margin-bottom: 7px;
+  padding: 7px 9px;
+  background: #fafafa;
+}
+
+.feedback-exam-name {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.feedback-exam-teacher {
+  font-size: 16px;
+  margin-top: 3px;
+}
+
+.feedback-exam-counts {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+  .feedback-question-table th,
+  .feedback-question-table td {
+    font-size: 11px;
+    padding: 5px;
+  }
+}
