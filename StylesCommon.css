@@ -769,15 +769,53 @@ thead {
 
 th {
   padding: 8px;
-  text-align: left;
+  text-align: center;
   border: 2px solid black;
   word-wrap: break-word;
 }
 td {
-  padding: 8px;
+  padding: 4px 6px;
   border: 1px solid black;
   white-space: pre-line;
   text-align: left;
+  line-height: 0.5;
+  margin: 0;
+}
+
+.center-text-td {
+  text-align: center;
+}
+
+.td-green {
+  background-color: #45a049;
+  padding-bottom: 9px;
+}
+
+.td-red {
+  background-color: rgb(148, 0, 0);
+  padding-top: 6px;
+}
+
+td input[type="radio"] {
+  display: block;
+  height: 19px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.feedback-counter {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0 10px;
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.8;
+  background: #52609a;
+  border: 1px solid #c5c9d8;
+  border-radius: 5px;
+  color: #fff;
 }
 
 .desc-container {

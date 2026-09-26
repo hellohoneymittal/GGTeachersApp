@@ -41,6 +41,11 @@ function renderMenus(selectedName, roleObj) {
     "UT Syllabus App Role",
     roleObj,
   );
+  SHOW_BUTTON_BY_ADMIN_ROLE(
+    "feedbackBtn",
+    "Student Feedback Entry Role",
+    roleObj,
+  );
 }
 
 async function LOAD_HTML_FILE(fileName, containerId = "popupContainer") {

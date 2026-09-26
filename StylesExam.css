@@ -84,3 +84,9 @@
   color: rgb(0, 0, 0);
   border: 0.1px solid black;
 }
+
+.popup-content .yellow:disabled {
+  background-color: #f7cf9c; /* Lighter color to indicate disabled state */
+  color: grey; /* Light color for text when disabled */
+  cursor: not-allowed; /* Shows a not-allowed cursor to indicate it cannot be clicked */
+}

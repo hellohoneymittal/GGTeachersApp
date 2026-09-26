@@ -75,24 +75,29 @@ function updateTimerColor(color = "black", toggleBtn) {
 
 // Event listener for exam class dropdown change
 document.getElementById("examclass").addEventListener("change", function () {
+  let nextBtn = document.getElementById("examNext");
   selectedExamClass = this.value.trim();
   populateExamSubjectDropdown(selectedExamClass);
   // Reset subject dropdown to default "Select" option when class is changed
   document.getElementById("examsubject").value = "";
   document.getElementById("pendingexam").value = "";
+  nextBtn.disabled = true;
 });
 
 // Event listener for exam subject dropdown change
 document.getElementById("examsubject").addEventListener("change", function () {
+  let nextBtn = document.getElementById("examNext");
   selectedExamSubject = this.value.trim();
   // Reset subject dropdown to default "Select" option when class is changed
   document.getElementById("pendingexam").innerHTML = "";
   if (selectedExamClass && selectedExamSubject) {
     populatePendingExamDropdown(selectedExamClass, selectedExamSubject);
   }
+  nextBtn.disabled = true;
 });
 
 document.getElementById("pendingexam").addEventListener("change", function () {
+  let nextBtn = document.getElementById("examNext");
   if (this.value != "") {
     let exam_val_arr = this.value.trim().split("%")[1].split("#");
     selectedExamDetails = {
@@ -107,7 +112,8 @@ document.getElementById("pendingexam").addEventListener("change", function () {
         ],
       examName: this.value.trim().split("%")[0],
     };
-  }
+    nextBtn.disabled = false;
+  } else nextBtn.disabled = true;
 
   checkAllSelected("examContainer", "examNext");
 });
@@ -300,6 +306,9 @@ async function openExamsWindow() {
       homePageClick();
     } else {
       populateExamClassDropdown();
+      document.getElementById("examNext").disabled = true;
+      document.getElementById("login-user-name-lbl_exam").innerHTML =
+        selectedTeacher;
       SHOW_SPECIFIC_DIV("examContainer");
     }
   } else {
