@@ -266,6 +266,15 @@
 
                     <button
                       class="green"
+                      id="feedbackReportBtn"
+                      onclick="openStudentFeedbackReport()"
+                      style="display: none"
+                    >
+                      View Student Feedback Report
+                    </button>
+
+                    <button
+                      class="green"
                       id="gatePassBtn"
                       onclick="openGatePassWindow()"
                       style="display: none"
@@ -1595,6 +1604,78 @@
               onclick="handleStudentFeedbackButton()"
             >
               Save Feedback
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Feedback Report -->
+      <div class="popup" id="studentFeedbackReportPopup" style="display: none">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+
+          <div class="user-info-block">
+            <p id="studentFeedbackReportHeading"></p>
+          </div>
+
+          <br />
+
+          <h3>Student Feedback Report</h3>
+
+          <br />
+
+          <!-- =========================
+         FILTERS
+    ========================== -->
+
+          <div class="controlRow">
+            <label class="width20" for="feedbackReportClass"> Class </label>
+
+            <select class="width80" id="feedbackReportClass">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+
+          <div class="controlRow">
+            <label class="width20" for="feedbackReportSubject"> Subject </label>
+
+            <select class="width80" id="feedbackReportSubject" disabled>
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+
+          <div class="controlRow">
+            <label class="width20" for="feedbackReportExam"> Exam </label>
+
+            <select class="width80" id="feedbackReportExam" disabled>
+              <option value="" selected>All Exams</option>
+            </select>
+          </div>
+
+          <!-- =========================
+         REPORT
+    ========================== -->
+
+          <div id="feedbackReportOutput">
+            <div class="feedback-report-message">
+              Select Class and Subject to view the report.
+            </div>
+          </div>
+
+          <!-- =========================
+         CLOSE
+    ========================== -->
+
+          <div class="button-row">
+            <button
+              type="button"
+              class="red"
+              onclick="SHOW_SPECIFIC_DIV('menuPopup')"
+            >
+              Close
             </button>
           </div>
         </div>

@@ -433,8 +433,6 @@ function updateStudentFeedbackCounter() {
 function updateStudentFeedbackButtons() {
   const saveButton = document.getElementById("saveStudentFeedbackBtn");
 
-  const submitButton = document.getElementById("submitAllFeedbacksBtn");
-
   const clrbutton = document.getElementById("clearStudentFeedbackBtn");
 
   if (currentFeedbackRemaining > 0) {
@@ -473,7 +471,7 @@ function getCurrentStudentFeedback() {
     }
   });
 
-  return `G: ${goodQuestions.join(", ")}\nNG: ${notGoodQuestions.join(", ")}`;
+  return `G: ${goodQuestions.join("# ")}\nNG: ${notGoodQuestions.join("# ")}`;
 }
 
 function saveStudentFeedback() {
@@ -492,6 +490,8 @@ function saveStudentFeedback() {
 }
 
 async function submitAllStudentFeedbacks() {
+  if (savedStudentFeedbacks.length == 0) openStudentFeedback();
+
   const combinedFeedback = savedStudentFeedbacks
     .map((item) => item.feedback)
     .join("\nxxxxx\n");
@@ -516,7 +516,10 @@ async function submitAllStudentFeedbacks() {
       return;
     }
 
-    SHOW_SUCCESS_POPUP("Feedback submitted successfully.", openStudentFeedback);
+    SHOW_SUCCESS_POPUP("Feedback submitted successfully.", () => {
+      savedStudentFeedbacks = [];
+      openStudentFeedback();
+    });
   } else {
     SHOW_ERROR_POPUP("Unable to submit the feedbacks!!");
   }
@@ -546,3 +549,592 @@ function handleStudentFeedbackButton() {
     submitAllStudentFeedbacks();
   }
 }
+
+//================================== REPORTING ==========================================
+
+/* =========================================================
+   STUDENT FEEDBACK REPORT
+========================================================= */
+
+let studentFeedbackReportData = {};
+
+let feedbackReportClass = "";
+let feedbackReportSubject = "";
+let feedbackReportExam = "";
+
+/* =========================================================
+   OPEN REPORT
+========================================================= */
+
+async function openStudentFeedbackReport() {
+  const response = await CALL_API("GET_STUDENT_FEEDBACK", {});
+
+  if (!response || response.status !== true) {
+    SHOW_ERROR_POPUP(
+      response?.data || "Unable to load student feedback report.",
+    );
+
+    return;
+  }
+
+  studentFeedbackReportData = response.data?.data || {};
+
+  feedbackReportClass = "";
+  feedbackReportSubject = "";
+  feedbackReportExam = "";
+
+  populateFeedbackReportClasses();
+
+  console.log(studentFeedbackReportData);
+
+  document.getElementById("studentFeedbackReportHeading").innerHTML =
+    selectedTeacher;
+
+  SHOW_SPECIFIC_DIV("studentFeedbackReportPopup");
+}
+
+/* =========================================================
+   CLASS DROPDOWN
+========================================================= */
+
+function populateFeedbackReportClasses() {
+  const select = document.getElementById("feedbackReportClass");
+
+  select.innerHTML = `<option value="" selected>Select</option>`;
+
+  Object.keys(studentFeedbackReportData).forEach((className) => {
+    const option = document.createElement("option");
+
+    option.value = className;
+    option.textContent = className;
+
+    select.appendChild(option);
+  });
+
+  resetFeedbackReportSubject();
+  resetFeedbackReportExam();
+
+  clearFeedbackReportOutput();
+}
+
+/* =========================================================
+   SUBJECT DROPDOWN
+========================================================= */
+
+function populateFeedbackReportSubjects() {
+  const select = document.getElementById("feedbackReportSubject");
+
+  select.innerHTML = `<option value="" selected>Select</option>`;
+
+  const classData = studentFeedbackReportData[feedbackReportClass];
+
+  if (!classData) return;
+
+  Object.keys(classData).forEach((subjectName) => {
+    const option = document.createElement("option");
+
+    option.value = subjectName;
+    option.textContent = subjectName;
+
+    select.appendChild(option);
+  });
+
+  select.disabled = false;
+}
+
+/* =========================================================
+   EXAM DROPDOWN
+========================================================= */
+
+function populateFeedbackReportExams() {
+  const select = document.getElementById("feedbackReportExam");
+
+  select.innerHTML = `<option value="" selected>
+       All Exams
+     </option>`;
+
+  const subjectData =
+    studentFeedbackReportData[feedbackReportClass]?.[feedbackReportSubject];
+
+  if (!subjectData) return;
+
+  Object.keys(subjectData).forEach((examName) => {
+    const option = document.createElement("option");
+
+    option.value = examName;
+    option.textContent = examName;
+
+    select.appendChild(option);
+  });
+
+  select.disabled = false;
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetFeedbackReportSubject() {
+  const select = document.getElementById("feedbackReportSubject");
+
+  select.innerHTML = `<option value="" selected>Select</option>`;
+
+  select.disabled = true;
+
+  feedbackReportSubject = "";
+}
+
+function resetFeedbackReportExam() {
+  const select = document.getElementById("feedbackReportExam");
+
+  select.innerHTML = `<option value="" selected>
+       All Exams
+     </option>`;
+
+  select.disabled = true;
+
+  feedbackReportExam = "";
+}
+
+/* =========================================================
+   PARSE FEEDBACK
+========================================================= */
+
+/*
+  Converts:
+
+  G: Question 1, Question 2
+  NG: Question 3
+  xxxxx
+  G: Question 4
+  NG: Question 5
+
+  into:
+
+  [
+    {
+      good: [...],
+      noGood: [...]
+    },
+    {
+      good: [...],
+      noGood: [...]
+    }
+  ]
+*/
+
+function parseFeedbackString(feedback) {
+  if (!feedback) return [];
+
+  const text = String(feedback).replace(/\r/g, "").trim();
+
+  if (!text) return [];
+
+  // Each xxxxx represents one student's feedback
+  const studentBlocks = text
+    .split("xxxxx")
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return studentBlocks.map((block) => {
+    const lines = block.split("\n").map((line) => line.trim());
+
+    let goodText = "";
+    let noGoodText = "";
+
+    lines.forEach((line) => {
+      if (line.startsWith("G:")) {
+        goodText = line.substring(2).trim();
+      } else if (line.startsWith("NG:")) {
+        noGoodText = line.substring(3).trim();
+      }
+    });
+
+    return {
+      good: splitFeedbackQuestions(goodText),
+      noGood: splitFeedbackQuestions(noGoodText),
+    };
+  });
+}
+
+function splitFeedbackQuestions(text) {
+  if (!text) return [];
+
+  return text
+    .split("# ")
+    .map((question) => question.replace(/\r/g, "").replace(/\n/g, " ").trim())
+    .filter(Boolean);
+}
+
+/* =========================================================
+   GET SELECTED EXAMS
+========================================================= */
+
+function getFeedbackReportExams() {
+  const subjectData =
+    studentFeedbackReportData[feedbackReportClass]?.[feedbackReportSubject];
+
+  if (!subjectData) return [];
+
+  if (!feedbackReportExam) {
+    return Object.entries(subjectData).map(([examName, examData]) => ({
+      examName,
+      examData,
+    }));
+  }
+
+  if (!subjectData[feedbackReportExam]) {
+    return [];
+  }
+
+  return [
+    {
+      examName: feedbackReportExam,
+      examData: subjectData[feedbackReportExam],
+    },
+  ];
+}
+
+/* =========================================================
+   BUILD STATISTICS
+========================================================= */
+
+function buildFeedbackStatistics(exams) {
+  const questionMap = {};
+
+  let totalGood = 0;
+  let totalNoGood = 0;
+
+  exams.forEach(({ examData }) => {
+    const feedback = examData.feedback || "";
+
+    const students = parseFeedbackString(feedback);
+
+    students.forEach((student) => {
+      student.good.forEach((question) => {
+        totalGood++;
+
+        if (!questionMap[question]) {
+          questionMap[question] = {
+            good: 0,
+            noGood: 0,
+          };
+        }
+
+        questionMap[question].good++;
+      });
+
+      student.noGood.forEach((question) => {
+        totalNoGood++;
+
+        if (!questionMap[question]) {
+          questionMap[question] = {
+            good: 0,
+            noGood: 0,
+          };
+        }
+
+        questionMap[question].noGood++;
+      });
+    });
+  });
+
+  return {
+    questionMap,
+    totalGood,
+    totalNoGood,
+  };
+}
+
+/* =========================================================
+   RENDER REPORT
+========================================================= */
+
+function renderStudentFeedbackReport() {
+  if (!feedbackReportClass || !feedbackReportSubject) {
+    clearFeedbackReportOutput();
+    return;
+  }
+
+  const exams = getFeedbackReportExams();
+
+  if (!exams.length) {
+    document.getElementById("feedbackReportOutput").innerHTML = `
+      <div class="feedback-report-message">
+        No feedback found.
+      </div>
+    `;
+    return;
+  }
+
+  const stats = buildFeedbackStatistics(exams);
+
+  const totalResponses = stats.totalGood + stats.totalNoGood;
+
+  const goodPercentage = totalResponses
+    ? (stats.totalGood / totalResponses) * 100
+    : 0;
+
+  const noGoodPercentage = totalResponses
+    ? (stats.totalNoGood / totalResponses) * 100
+    : 0;
+
+  let teacherHTML = "";
+
+  // Show teacher only when a specific exam is selected
+  if (feedbackReportExam) {
+    const examData = exams[0].examData;
+
+    teacherHTML = `
+      <div class="feedback-report-teacher">
+        Teacher:
+        ${escapeFeedbackHTML(examData.teacherName || "-")}
+      </div>
+    `;
+  }
+
+  document.getElementById("feedbackReportOutput").innerHTML = `
+
+    <div class="feedback-report-header">
+
+      <h3>
+        ${escapeFeedbackHTML(feedbackReportClass)}
+        -
+        ${escapeFeedbackHTML(feedbackReportSubject)}
+      </h3>
+
+      <div class="feedback-report-exam">
+        ${
+          feedbackReportExam
+            ? `Examination:
+               ${escapeFeedbackHTML(feedbackReportExam)}`
+            : `All Examinations`
+        }
+      </div>
+
+      ${teacherHTML}
+
+    </div>
+
+
+    <div class="feedback-report-section-title">
+      Overall Feedback
+    </div>
+
+
+    <table class="feedback-summary-table">
+
+      <thead>
+        <tr>
+          <th>Good</th>
+          <th>Not Good</th>
+          <th>Good %</th>
+          <th>Not Good %</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+
+          <td class="feedback-good">
+            ${stats.totalGood}
+          </td>
+
+          <td class="feedback-no-good">
+            ${stats.totalNoGood}
+          </td>
+
+          <td class="feedback-good">
+            ${goodPercentage.toFixed(2)}%
+          </td>
+
+          <td class="feedback-no-good">
+            ${noGoodPercentage.toFixed(2)}%
+          </td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+
+    <div class="feedback-report-section-title">
+      Question-wise Feedback
+    </div>
+
+    ${createFeedbackQuestionTable(stats.questionMap)}
+
+  `;
+}
+
+/* =========================================================
+   QUESTION TABLE
+========================================================= */
+
+function createFeedbackQuestionTable(questionMap) {
+  const questions = Object.keys(questionMap);
+
+  if (!questions.length) {
+    return `
+      <div class="feedback-report-message">
+        No question-wise feedback available.
+      </div>
+    `;
+  }
+
+  let rows = "";
+
+  questions.forEach((question, index) => {
+    const data = questionMap[question];
+
+    const responses = data.good + data.noGood;
+
+    const goodPercentage = responses ? (data.good / responses) * 100 : 0;
+
+    const noGoodPercentage = responses ? (data.noGood / responses) * 100 : 0;
+
+    rows += `
+
+      <tr>
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeFeedbackHTML(question)}
+        </td>
+
+        <td class="feedback-good">
+          ${goodPercentage.toFixed(2)}%
+        </td>
+
+        <td class="feedback-no-good">
+          ${noGoodPercentage.toFixed(2)}%
+        </td>
+
+      </tr>
+    `;
+  });
+
+  return `
+
+    <div class="feedback-question-table-wrapper">
+
+      <table class="feedback-question-table">
+
+        <thead>
+
+          <tr>
+
+            <th>S No.</th>
+
+            <th>Question</th>
+
+            <th>Good</th>
+
+            <th>Not Good</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${rows}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+}
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeFeedbackHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/* =========================================================
+   CLEAR OUTPUT
+========================================================= */
+
+function clearFeedbackReportOutput() {
+  document.getElementById("feedbackReportOutput").innerHTML = `
+    <div class="feedback-report-message">
+      Select Class and Subject to view the report.
+    </div>
+  `;
+}
+
+/* =========================================================
+   CLASS CHANGE
+========================================================= */
+
+document
+  .getElementById("feedbackReportClass")
+  .addEventListener("change", function () {
+    feedbackReportClass = this.value;
+
+    feedbackReportSubject = "";
+    feedbackReportExam = "";
+
+    resetFeedbackReportSubject();
+    resetFeedbackReportExam();
+
+    if (feedbackReportClass) {
+      populateFeedbackReportSubjects();
+    }
+
+    clearFeedbackReportOutput();
+  });
+
+/* =========================================================
+   SUBJECT CHANGE
+========================================================= */
+
+document
+  .getElementById("feedbackReportSubject")
+  .addEventListener("change", function () {
+    feedbackReportSubject = this.value;
+
+    feedbackReportExam = "";
+
+    resetFeedbackReportExam();
+
+    if (feedbackReportSubject) {
+      populateFeedbackReportExams();
+
+      /*
+        Exam is optional.
+        Therefore immediately show
+        ALL EXAMS report.
+      */
+
+      renderStudentFeedbackReport();
+    } else {
+      clearFeedbackReportOutput();
+    }
+  });
+
+/* =========================================================
+   EXAM CHANGE
+========================================================= */
+
+document
+  .getElementById("feedbackReportExam")
+  .addEventListener("change", function () {
+    feedbackReportExam = this.value;
+
+    renderStudentFeedbackReport();
+  });
