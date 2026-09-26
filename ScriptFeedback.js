@@ -154,7 +154,7 @@ function openFeedbackGridWindow(
     "existingFeedbackBackButton",
   );
   const buttonRow = popup.querySelector(".button-row");
-  const gridheadingelement = document.getElementById("gridHeading");
+  const gridheadingelement = document.getElementById("gridHeadingFeedback");
 
   if (gridHeading == "") gridheadingelement.hidden = true;
   else gridheadingelement.innerHTML = gridHeading;

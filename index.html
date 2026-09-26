@@ -257,6 +257,15 @@
                   <div class="question-grid">
                     <button
                       class="green"
+                      id="feedbackBtn"
+                      onclick="openStudentFeedback()"
+                      style="display: none"
+                    >
+                      Fill Student Feedback
+                    </button>
+
+                    <button
+                      class="green"
                       id="gatePassBtn"
                       onclick="openGatePassWindow()"
                       style="display: none"
@@ -751,6 +760,13 @@
             src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
             alt="School Logo"
           />
+
+          <div class="user-info-block">
+            <p id="login-user-name-lbl_exam"></p>
+          </div>
+
+          <br />
+
           <div class="controlRow">
             <label class="width20" for="examclass">Class</label>
             <select class="width80" id="examclass">
@@ -1311,7 +1327,7 @@
             <p id="teacher-existing-feedback-lbl_user"></p>
           </div>
           <br />
-          <h2 id="gridHeading"></h2>
+          <h2 id="gridHeadingFeedback"></h2>
           <div class="button-row">
             <button class="green" id="existingFeedbackSubmitBtn">Back</button>
             <button class="red" id="existingFeedbackBackButton">Back</button>
@@ -1472,7 +1488,117 @@
         </div>
       </div>
 
-      <div id="popupContainer"></div>
+      <!-- ================= STUDENT FEEDBACK POPUP ================= -->
+
+      <div class="popup" id="studentFeedbackPopup" style="display: none">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+
+          <div class="user-info-block">
+            <p id="studentFeedback_lbl"></p>
+          </div>
+
+          <br />
+
+          <div class="controlRow">
+            <label class="width20" for="studentFeedbackClass">Class</label>
+            <select class="width80" id="studentFeedbackClass">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="studentFeedbackSubject">Subject</label>
+            <select class="width80" id="studentFeedbackSubject">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+          <div class="controlRow">
+            <label class="width20" for="studentFeedbackExam">Exam</label>
+            <select class="width80" id="studentFeedbackExam">
+              <option value="" selected>Select</option>
+            </select>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+
+          <div class="button-row">
+            <button class="red" onclick="SHOW_SPECIFIC_DIV('menuPopup')">
+              Back
+            </button>
+            <button
+              class="green"
+              onclick="openSelectedStudentFeedback()"
+              disabled
+              id="studentFeedbackNext"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="studentFeedbackContainer">
+        <div class="popup-content scrollable-content">
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+          <div class="user-info-block">
+            <p id="studentFeedbackFormHeading"></p>
+          </div>
+
+          <br />
+
+          <!-- COUNTER -->
+
+          <div id="feedbackCounter" class="feedback-counter">
+            Feedback Forms Remaining : 0
+          </div>
+
+          <br />
+
+          <!-- QUESTIONS -->
+
+          <table id="studentFeedbackTable">
+            <thead class="table-header">
+              <tr>
+                <th>S No.</th>
+                <th>Question</th>
+                <th>Good</th>
+                <th>Not Good</th>
+              </tr>
+            </thead>
+
+            <tbody id="feedbackTableBody"></tbody>
+          </table>
+
+          <div class="button-row">
+            <button
+              class="purple"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Go back WITHOUT Submitting?',
+                  openStudentFeedback,
+                )
+              "
+            >
+              Back
+            </button>
+            <button id="clearStudentFeedbackBtn" class="red">Clear Form</button>
+
+            <button
+              id="saveStudentFeedbackBtn"
+              class="green"
+              onclick="handleStudentFeedbackButton()"
+            >
+              Save Feedback
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="ScriptConstants.js"></script>
@@ -1492,5 +1618,6 @@
     <script src="ScriptFeedback.js"></script>
     <script src="ScriptExamination.js"></script>
     <script src="ScriptNewExam.js"></script>
+    <script src="ScriptStudentFeedback.js"></script>
   </body>
 </html>
