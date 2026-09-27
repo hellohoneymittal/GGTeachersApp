@@ -705,3 +705,938 @@ async function getStudentDetails(inputLeaveFlag = 0) {
     return;
   }
 }
+
+// ============================== TEACHER ATTENDANCE REPORT ==============================
+
+let teacherAttendanceReportData = {};
+
+let selectedAttendanceClass = "";
+let selectedAttendanceSubject = "";
+let selectedAttendanceTeacher = "";
+let selectedAttendanceExam = "";
+let attendanceTeacherNames = [];
+
+function populateTeacherAttendanceExams() {
+  const examSelect = document.getElementById("teacherAttendanceExam");
+
+  if (!examSelect) return;
+
+  examSelect.innerHTML = `
+    <option value="" selected>
+      All Exams
+    </option>
+  `;
+
+  const examSet = new Set();
+
+  // Get ALL exam names from ALL classes and subjects
+  Object.values(teacherAttendanceReportData).forEach((classData) => {
+    Object.values(classData).forEach((subjectData) => {
+      Object.keys(subjectData).forEach((examName) => {
+        examSet.add(examName);
+      });
+    });
+  });
+
+  [...examSet].sort().forEach((examName) => {
+    const option = document.createElement("option");
+
+    option.value = examName;
+    option.textContent = examName;
+
+    examSelect.appendChild(option);
+  });
+
+  // Exam is always available
+  examSelect.disabled = false;
+}
+
+document
+  .getElementById("teacherAttendanceClass")
+  .addEventListener("change", function () {
+    selectedAttendanceClass = this.value;
+
+    selectedAttendanceSubject = "";
+    selectedAttendanceTeacher = "";
+
+    resetTeacherAttendanceSubject();
+
+    // Clear teacher because Class/Subject route is being used
+    document.getElementById("teacherAttendanceTeacherSearch").value = "";
+
+    selectedAttendanceTeacher = "";
+    hideTeacherSearchOptions();
+
+    if (selectedAttendanceClass) {
+      populateTeacherAttendanceSubjects();
+
+      clearTeacherAttendanceReport();
+    } else {
+      renderDefaultTeacherAttendanceReport();
+    }
+  });
+
+document
+  .getElementById("teacherAttendanceSubject")
+  .addEventListener("change", function () {
+    selectedAttendanceSubject = this.value;
+
+    if (selectedAttendanceSubject) {
+      // Class + Subject route
+      selectedAttendanceTeacher = "";
+
+      document.getElementById("teacherAttendanceTeacherSearch").value = "";
+
+      selectedAttendanceTeacher = "";
+      hideTeacherSearchOptions();
+
+      renderClassSubjectAttendanceReport();
+    } else {
+      renderDefaultTeacherAttendanceReport();
+    }
+  });
+
+document
+  .getElementById("teacherAttendanceExam")
+  .addEventListener("change", function () {
+    selectedAttendanceExam = this.value;
+
+    // If Class + Subject are selected
+    if (selectedAttendanceClass && selectedAttendanceSubject) {
+      renderClassSubjectAttendanceReport();
+      return;
+    }
+
+    // If Teacher is selected
+    if (selectedAttendanceTeacher) {
+      renderTeacherAttendanceReport();
+      return;
+    }
+
+    // No Class/Subject/Teacher selected
+    // → show DEFAULT low-attendance view,
+    // filtered by the selected Exam
+    renderDefaultTeacherAttendanceReport();
+  });
+
+function getClassSubjectAttendanceRecords() {
+  const classData = teacherAttendanceReportData[selectedAttendanceClass];
+
+  if (!classData) return [];
+
+  const subjectData = classData[selectedAttendanceSubject];
+
+  if (!subjectData) return [];
+
+  const records = [];
+
+  Object.entries(subjectData).forEach(([examName, examData]) => {
+    if (selectedAttendanceExam && examName !== selectedAttendanceExam) {
+      return;
+    }
+
+    normalizeAttendanceRecords(examData).forEach((record) => {
+      records.push({
+        examName,
+        ...record,
+      });
+    });
+  });
+
+  return records;
+}
+
+function getTeacherAttendanceRecords() {
+  const records = [];
+
+  Object.entries(teacherAttendanceReportData).forEach(
+    ([className, classData]) => {
+      Object.entries(classData).forEach(([subjectName, subjectData]) => {
+        Object.entries(subjectData).forEach(([examName, examData]) => {
+          // Optional exam filter
+          if (selectedAttendanceExam && examName !== selectedAttendanceExam) {
+            return;
+          }
+
+          normalizeAttendanceRecords(examData).forEach((record) => {
+            if (record.teacherName === selectedAttendanceTeacher) {
+              records.push({
+                className,
+                subjectName,
+                examName,
+                ...record,
+              });
+            }
+          });
+        });
+      });
+    },
+  );
+
+  return records;
+}
+
+function resetTeacherAttendanceSubject() {
+  const subjectSelect = document.getElementById("teacherAttendanceSubject");
+
+  if (!subjectSelect) return;
+
+  subjectSelect.innerHTML = `
+    <option value="" selected>Select</option>
+  `;
+
+  subjectSelect.disabled = true;
+
+  selectedAttendanceSubject = "";
+}
+
+function resetTeacherAttendanceExam() {
+  const examSelect = document.getElementById("teacherAttendanceExam");
+
+  if (!examSelect) return;
+
+  examSelect.innerHTML = `
+    <option value="" selected>
+      All Exams
+    </option>
+  `;
+
+  examSelect.disabled = false;
+
+  selectedAttendanceExam = "";
+}
+
+function clearTeacherAttendanceReport() {
+  document.getElementById("teacherAttendanceReportOutput").innerHTML = `
+    <div class="teacher-attendance-message">
+      Select subject to view report.
+    </div>
+  `;
+}
+
+async function openTeacherAttendanceReport() {
+  // Reset selections
+  selectedAttendanceClass = "";
+  selectedAttendanceSubject = "";
+  selectedAttendanceTeacher = "";
+  selectedAttendanceExam = "";
+
+  const response = await CALL_API("GET_TEACHER_ATTENDANCE", {});
+
+  if (!response || response.status !== true) {
+    SHOW_ERROR_POPUP(
+      response?.data || "Unable to load teacher attendance report.",
+    );
+
+    return;
+  }
+
+  if (typeof response.data === "string" && response.data.includes("ERR")) {
+    SHOW_ERROR_POPUP(response.data.split("ERR: ")[1]);
+    return;
+  }
+
+  teacherAttendanceReportData = response.data?.data || {};
+
+  console.log(teacherAttendanceReportData);
+
+  populateTeacherAttendanceClasses();
+  populateTeacherAttendanceTeachers();
+
+  resetTeacherAttendanceSubject();
+  resetTeacherAttendanceExam();
+
+  populateTeacherAttendanceExams();
+
+  renderDefaultTeacherAttendanceReport();
+
+  document.getElementById("teacherAttendanceReportHeading").innerHTML =
+    selectedTeacher;
+
+  SHOW_SPECIFIC_DIV("teacherAttendanceReportPopup");
+}
+
+function populateTeacherAttendanceClasses() {
+  const classSelect = document.getElementById("teacherAttendanceClass");
+
+  if (!classSelect) return;
+
+  classSelect.innerHTML = `
+    <option value="" selected>Select</option>
+  `;
+
+  Object.keys(teacherAttendanceReportData)
+    .sort()
+    .forEach((className) => {
+      const option = document.createElement("option");
+      option.value = className;
+      option.textContent = className;
+      classSelect.appendChild(option);
+    });
+}
+
+function populateTeacherAttendanceTeachers() {
+  const teacherSet = new Set();
+
+  Object.values(teacherAttendanceReportData).forEach((classData) => {
+    Object.values(classData).forEach((subjectData) => {
+      Object.values(subjectData).forEach((examData) => {
+        normalizeAttendanceRecords(examData).forEach((record) => {
+          if (record.teacherName) {
+            teacherSet.add(record.teacherName);
+          }
+        });
+      });
+    });
+  });
+
+  attendanceTeacherNames = [...teacherSet].sort((a, b) => a.localeCompare(b));
+
+  const searchInput = document.getElementById("teacherAttendanceTeacherSearch");
+
+  if (searchInput) searchInput.value = "";
+
+  hideTeacherSearchOptions();
+}
+
+function populateTeacherAttendanceSubjects() {
+  const subjectSelect = document.getElementById("teacherAttendanceSubject");
+
+  if (!subjectSelect) return;
+
+  subjectSelect.innerHTML = `
+    <option value="" selected>Select</option>
+  `;
+
+  if (!selectedAttendanceClass) {
+    subjectSelect.disabled = true;
+    return;
+  }
+
+  const classData = teacherAttendanceReportData[selectedAttendanceClass];
+
+  if (!classData) {
+    subjectSelect.disabled = true;
+    return;
+  }
+
+  Object.keys(classData)
+    .sort()
+    .forEach((subjectName) => {
+      const option = document.createElement("option");
+
+      option.value = subjectName;
+      option.textContent = subjectName;
+
+      subjectSelect.appendChild(option);
+    });
+
+  subjectSelect.disabled = Object.keys(classData).length === 0;
+}
+
+function normalizeAttendanceRecords(examData) {
+  if (!examData) return [];
+
+  // Recommended API format:
+  // examData = [
+  //   {
+  //     teacherName: "...",
+  //     ok: 12,
+  //     late: 8,
+  //     absent: 1,
+  //     leaves: 2,
+  //     total: 23
+  //   }
+  // ]
+
+  if (Array.isArray(examData)) {
+    return examData.map((record) => ({
+      teacherName: record.teacherName || "",
+      ok: Number(record.ok) || 0,
+      late: Number(record.late) || 0,
+      absent: Number(record.absent) || 0,
+      leaves: Number(record.leaves) || 0,
+      total: Number(record.total) || 0,
+    }));
+  }
+
+  // In case API returns a single record instead of an array
+  if (typeof examData === "object") {
+    return [
+      {
+        teacherName: examData.teacherName || "",
+        ok: Number(examData.ok) || 0,
+        late: Number(examData.late) || 0,
+        absent: Number(examData.absent) || 0,
+        leaves: Number(examData.leaves) || 0,
+        total: Number(examData.total) || 0,
+      },
+    ];
+  }
+
+  return [];
+}
+
+function renderClassSubjectAttendanceReport() {
+  const output = document.getElementById("teacherAttendanceReportOutput");
+
+  if (!output) return;
+
+  if (!selectedAttendanceClass || !selectedAttendanceSubject) {
+    clearTeacherAttendanceReport();
+    return;
+  }
+
+  const records = getClassSubjectAttendanceRecords();
+
+  if (!records.length) {
+    output.innerHTML = `
+      <div class="teacher-attendance-message">
+        No attendance data found.
+      </div>
+    `;
+    return;
+  }
+
+  let heading = `
+    <div class="teacher-attendance-header">
+      <h3>
+        ${escapeHTML(selectedAttendanceClass)}
+        - 
+        ${escapeHTML(selectedAttendanceSubject)}
+      </h3>
+
+      <div class="teacher-attendance-subtitle">
+        ${
+          selectedAttendanceExam
+            ? `Examination: ${escapeHTML(selectedAttendanceExam)}`
+            : `All Examinations`
+        }
+      </div>
+    </div>
+  `;
+
+  /*
+    If an exam is selected, show one table.
+
+    If no exam is selected, records from multiple exams
+    are separated by examination.
+  */
+
+  let reportHTML = "";
+
+  if (selectedAttendanceExam) {
+    reportHTML = createTeacherAttendanceTable(records, false, false);
+  } else {
+    const examGroups = {};
+
+    records.forEach((record) => {
+      const examName = record.examName || "Unknown Examination";
+
+      if (!examGroups[examName]) {
+        examGroups[examName] = [];
+      }
+
+      examGroups[examName].push(record);
+    });
+
+    Object.entries(examGroups).forEach(([examName, examRecords]) => {
+      reportHTML += `
+          <div class="teacher-attendance-exam">
+
+            <div class="teacher-attendance-exam-title">
+              ${escapeHTML(examName)}
+            </div>
+
+            ${createTeacherAttendanceTable(examRecords, false, false)}
+
+          </div>
+        `;
+    });
+  }
+
+  output.innerHTML = heading + reportHTML;
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderTeacherAttendanceReport() {
+  const output = document.getElementById("teacherAttendanceReportOutput");
+
+  if (!output) return;
+
+  if (!selectedAttendanceTeacher) {
+    clearTeacherAttendanceReport();
+    return;
+  }
+
+  const records = getTeacherAttendanceRecords();
+
+  if (!records.length) {
+    output.innerHTML = `
+      <div class="teacher-attendance-message">
+        No attendance data found for this teacher.
+      </div>
+    `;
+    return;
+  }
+
+  const heading = `
+    <div class="teacher-attendance-header">
+      <h3>
+        ${escapeHTML(selectedAttendanceTeacher)}
+      </h3>
+
+      <div class="teacher-attendance-subtitle">
+        ${
+          selectedAttendanceExam
+            ? `Examination: ${escapeHTML(selectedAttendanceExam)}`
+            : `All Examinations`
+        }
+      </div>
+    </div>
+  `;
+
+  let reportHTML = "";
+
+  if (selectedAttendanceExam) {
+    // One selected examination
+    reportHTML = createTeacherAttendanceTable(records, true, true);
+  } else {
+    // All examinations
+    const examGroups = {};
+
+    records.forEach((record) => {
+      const examName = record.examName || "Unknown Examination";
+
+      if (!examGroups[examName]) {
+        examGroups[examName] = [];
+      }
+
+      examGroups[examName].push(record);
+    });
+
+    Object.entries(examGroups).forEach(([examName, examRecords]) => {
+      reportHTML += `
+          <div class="teacher-attendance-exam">
+
+            <div class="teacher-attendance-exam-title">
+              ${escapeHTML(examName)}
+            </div>
+
+            ${createTeacherAttendanceTable(examRecords, true, true)}
+
+          </div>
+        `;
+    });
+  }
+
+  output.innerHTML = heading + reportHTML;
+}
+
+function createTeacherAttendanceTable(
+  records,
+  showClassSubject = false,
+  hideTeacher = false,
+) {
+  if (!records || !records.length) {
+    return `
+      <div class="feedback-report-message">
+        No attendance data found.
+      </div>
+    `;
+  }
+
+  let rowsHTML = "";
+
+  records.forEach((record) => {
+    const percentage = getAttendancePercentage(record);
+
+    const percentageValue = Number(percentage);
+
+    const percentageClass =
+      percentageValue < 75
+        ? "teacher-attendance-red"
+        : "teacher-attendance-green";
+
+    rowsHTML += `
+      <tr>
+
+        ${
+          showClassSubject
+            ? `
+              <td>
+                ${escapeHTML(record.className || "-")}
+              </td>
+
+              <td>
+                ${escapeHTML(record.subjectName || "-")}
+              </td>
+            `
+            : ""
+        }
+
+        ${
+          !hideTeacher
+            ? `
+              <td>
+                ${escapeHTML(record.teacherName || "-")}
+              </td>
+            `
+            : ""
+        }
+
+        <td class="teacher-attendance-black">${record.ok}</td>
+
+        <td class="teacher-attendance-red">
+          ${record.late}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.absent}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.leaves}
+        </td>
+
+        <td class="teacher-attendance-black">${record.total}</td>
+
+        <td class="${percentageClass}">
+          ${percentage}%
+        </td>
+
+      </tr>
+    `;
+  });
+
+  return `
+    <div class="feedback-question-table-wrapper">
+
+      <table class="
+        ${hideTeacher ? "feedback-question-table2" : "feedback-question-table3"}
+        teacher-attendance-table
+        ${hideTeacher ? "teacher-attendance-teacher-table" : "teacher-attendance-class-subject-table"}
+      ">
+
+        <thead>
+          <tr>
+
+            ${
+              showClassSubject
+                ? `
+                  <th>Class</th>
+                  <th>Subject</th>
+                `
+                : ""
+            }
+
+            ${!hideTeacher ? `<th>Teacher</th>` : ""}
+
+            <th>OK</th>
+            <th>Late</th>
+            <th>Absent</th>
+            <th>Leaves</th>
+            <th>Total</th>
+            <th>OK %</th>
+
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rowsHTML}
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+
+function getAttendancePercentage(record) {
+  const total = Number(record.total) || 0;
+  const ok = Number(record.ok) || 0;
+
+  if (total === 0) {
+    return "0.0";
+  }
+
+  return ((ok / total) * 100).toFixed(2);
+}
+
+function getLowAttendanceRecords() {
+  const records = [];
+
+  Object.entries(teacherAttendanceReportData).forEach(
+    ([className, classData]) => {
+      Object.entries(classData).forEach(([subjectName, subjectData]) => {
+        Object.entries(subjectData).forEach(([examName, examData]) => {
+          // Apply Exam filter
+          if (selectedAttendanceExam && examName !== selectedAttendanceExam) {
+            return;
+          }
+
+          normalizeAttendanceRecords(examData).forEach((record) => {
+            const total = Number(record.total) || 0;
+            const ok = Number(record.ok) || 0;
+
+            if (total === 0) return;
+
+            const okPercentage = (ok / total) * 100;
+
+            // Only below 75%
+            if (okPercentage < 75) {
+              records.push({
+                className,
+                subjectName,
+                examName,
+                teacherName: record.teacherName || "",
+                leaves: Number(record.leaves) || 0,
+                absent: Number(record.absent) || 0,
+                late: Number(record.late) || 0,
+                ok: Number(record.ok) || 0,
+                total,
+                okPercentage,
+              });
+            }
+          });
+        });
+      });
+    },
+  );
+
+  // Lowest OK % first
+  records.sort((a, b) => a.okPercentage - b.okPercentage);
+
+  return records;
+}
+
+function renderDefaultTeacherAttendanceReport() {
+  const output = document.getElementById("teacherAttendanceReportOutput");
+
+  if (!output) return;
+
+  const records = getLowAttendanceRecords();
+
+  if (!records.length) {
+    output.innerHTML = `
+      <div class="feedback-report-message">
+        No teacher attendance below 75% found.
+      </div>
+    `;
+    return;
+  }
+
+  // Show Examination column only when All Exams is selected
+  const showExamColumn = !selectedAttendanceExam;
+
+  let rowsHTML = "";
+
+  records.forEach((record) => {
+    rowsHTML += `
+      <tr>
+
+        <td>
+          ${escapeHTML(record.className)}
+          -
+          ${escapeHTML(record.subjectName)}
+        </td>
+
+        ${
+          showExamColumn
+            ? `
+              <td>
+                ${escapeHTML(record.examName)}
+              </td>
+            `
+            : ""
+        }
+
+        <td>
+          ${escapeHTML(record.teacherName || "-")}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.leaves}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.absent}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.late}
+        </td>
+
+        <td class="teacher-attendance-red">
+          ${record.okPercentage.toFixed(2)}%
+        </td>
+
+      </tr>
+    `;
+  });
+
+  output.innerHTML = `
+    <div class="teacher-attendance-header">
+
+      <h3>
+        ${
+          selectedAttendanceExam
+            ? `Teachers with Attendance Below 75% — ${escapeHTML(selectedAttendanceExam)}`
+            : `Teachers with Attendance Below 75% — All Examinations`
+        }
+      </h3>
+
+    </div>
+
+    <div class="feedback-question-table-wrapper">
+
+      <table class="
+  feedback-question-table
+  teacher-attendance-table
+  teacher-attendance-default-table
+  ${showExamColumn ? "all-exams" : "selected-exam"}
+">
+
+        <thead>
+          <tr>
+
+            <th>Class - Subject</th>
+
+            ${showExamColumn ? `<th>Examination</th>` : ""}
+
+            <th>Teacher</th>
+            <th>Leaves</th>
+            <th>Absent</th>
+            <th>Late</th>
+            <th>OK %</th>
+
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rowsHTML}
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+
+function hideTeacherSearchOptions() {
+  const options = document.getElementById("teacherAttendanceTeacherOptions");
+
+  if (options) {
+    options.hidden = true;
+    options.innerHTML = "";
+  }
+}
+
+function showTeacherSearchOptions(searchText = "") {
+  const options = document.getElementById("teacherAttendanceTeacherOptions");
+
+  if (!options) return;
+
+  options.innerHTML = "";
+
+  const search = searchText.trim().toLowerCase();
+
+  const matchingTeachers = attendanceTeacherNames.filter((name) =>
+    name.toLowerCase().includes(search),
+  );
+
+  if (!matchingTeachers.length) {
+    const empty = document.createElement("div");
+    empty.className = "teacher-search-empty";
+    empty.textContent = "No matching teacher found";
+    options.appendChild(empty);
+  } else {
+    matchingTeachers.forEach((name) => {
+      const item = document.createElement("div");
+
+      item.className = "teacher-search-option";
+      item.textContent = name;
+      item.tabIndex = 0;
+
+      item.addEventListener("click", () => {
+        selectAttendanceTeacher(name);
+      });
+
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          selectAttendanceTeacher(name);
+        }
+      });
+
+      options.appendChild(item);
+    });
+  }
+
+  options.hidden = false;
+}
+
+function selectAttendanceTeacher(name) {
+  selectedAttendanceTeacher = name;
+
+  document.getElementById("teacherAttendanceTeacherSearch").value = name;
+
+  // Clear Class + Subject, but preserve Exam.
+  selectedAttendanceClass = "";
+  selectedAttendanceSubject = "";
+
+  document.getElementById("teacherAttendanceClass").value = "";
+
+  resetTeacherAttendanceSubject();
+
+  hideTeacherSearchOptions();
+
+  renderTeacherAttendanceReport();
+}
+
+const teacherSearchInput = document.getElementById(
+  "teacherAttendanceTeacherSearch",
+);
+
+teacherSearchInput.addEventListener("input", function () {
+  // Clear the previously selected teacher when typing.
+  selectedAttendanceTeacher = "";
+
+  showTeacherSearchOptions(this.value);
+
+  // Return to the default view until a teacher is selected.
+  renderDefaultTeacherAttendanceReport();
+});
+
+teacherSearchInput.addEventListener("focus", function () {
+  showTeacherSearchOptions(this.value);
+});
+
+teacherSearchInput.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    hideTeacherSearchOptions();
+  }
+
+  if (event.key === "Enter") {
+    const matches = attendanceTeacherNames.filter((name) =>
+      name.toLowerCase().includes(this.value.trim().toLowerCase()),
+    );
+
+    if (matches.length === 1) {
+      selectAttendanceTeacher(matches[0]);
+    }
+  }
+});
+
+document.addEventListener("click", function (event) {
+  if (!event.target.closest(".teacher-search-container")) {
+    hideTeacherSearchOptions();
+  }
+});

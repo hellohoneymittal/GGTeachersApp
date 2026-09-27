@@ -51,6 +51,7 @@ function renderMenus(selectedName, roleObj) {
     "Student Feedback Entry Role",
     roleObj,
   );
+  SHOW_BUTTON_BY_ADMIN_ROLE("vwTchrAttBtn", "Security Role", roleObj);
 }
 
 async function LOAD_HTML_FILE(fileName, containerId = "popupContainer") {

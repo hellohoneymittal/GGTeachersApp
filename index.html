@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="StylesYearlyAdmissionKitSpecific.css" />
     <link rel="stylesheet" href="StylesExam.css" />
     <link rel="stylesheet" href="StyleUtSyllabus.css" />
+    <link rel="stylesheet" href="StylesReports.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -271,6 +272,15 @@
                       style="display: none"
                     >
                       View Student Feedback Report
+                    </button>
+
+                    <button
+                      class="green"
+                      id="vwTchrAttBtn"
+                      onclick="openTeacherAttendanceReport()"
+                      style="display: none"
+                    >
+                      View Teacher Attendance
                     </button>
 
                     <button
@@ -1668,6 +1678,118 @@
           <!-- =========================
          CLOSE
     ========================== -->
+
+          <div class="button-row">
+            <button
+              type="button"
+              class="red"
+              onclick="SHOW_SPECIFIC_DIV('menuPopup')"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+     TEACHER ATTENDANCE REPORT POPUP
+========================================================= -->
+
+      <div
+        class="popup"
+        id="teacherAttendanceReportPopup"
+        style="display: none"
+      >
+        <div class="popup-content scrollable-content">
+          <!-- School Logo -->
+          <img
+            src="https://drive.google.com/thumbnail?id=15-SQ9oW0U2eX2vsWmyxvmhwu9Q1QgOZm&sz=w500"
+            alt="School Logo"
+          />
+
+          <!-- Heading -->
+          <div class="user-info-block">
+            <p id="teacherAttendanceReportHeading"></p>
+          </div>
+
+          <br />
+
+          <h3>Teacher Attendance Report</h3>
+
+          <br />
+
+          <!-- =====================================================
+         SEARCH TYPE
+    ====================================================== -->
+
+          <!-- EXAM -->
+          <div class="controlRow">
+            <label class="width20" for="teacherAttendanceExam"> Exam </label>
+
+            <select class="width80" id="teacherAttendanceExam">
+              <option value="" selected>All Exams</option>
+            </select>
+          </div>
+
+          <!-- CLASS + SUBJECT -->
+          <div class="teacher-attendance-class-subject-row">
+            <div class="teacher-attendance-filter-item">
+              <label for="teacherAttendanceClass"> Class </label>
+
+              <select id="teacherAttendanceClass">
+                <option value="" selected>Select</option>
+              </select>
+            </div>
+
+            <div class="teacher-attendance-filter-item">
+              <label for="teacherAttendanceSubject"> Subject </label>
+
+              <select id="teacherAttendanceSubject" disabled>
+                <option value="" selected>Select</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- OR -->
+          <div class="teacher-attendance-or">OR</div>
+
+          <!-- TEACHER -->
+          <div class="controlRow">
+            <label class="width20" for="teacherAttendanceTeacherSearch">
+              Teacher
+            </label>
+
+            <div class="width80 teacher-search-container">
+              <input
+                type="text"
+                id="teacherAttendanceTeacherSearch"
+                placeholder="Search Teacher Name"
+                autocomplete="off"
+              />
+
+              <div
+                id="teacherAttendanceTeacherOptions"
+                class="teacher-search-options"
+                hidden
+              ></div>
+            </div>
+          </div>
+
+          <!-- =====================================================
+         REPORT OUTPUT
+    ====================================================== -->
+
+          <div id="teacherAttendanceReportOutput">
+            <div class="teacher-attendance-message">
+              Select Class and Subject or Teacher Name to view the report.
+            </div>
+          </div>
+
+          <br />
+
+          <!-- =====================================================
+         BUTTONS
+    ====================================================== -->
 
           <div class="button-row">
             <button
