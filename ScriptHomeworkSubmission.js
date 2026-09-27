@@ -192,7 +192,7 @@ async function openGenerateHomeworkWindow() {
 
     if (Object.keys(eligibleHWList).length == 0) {
       SHOW_INFO_POPUP(
-        "No class-subjects available for raising Homework/Class Test Syllabus today!",
+        "No class-subjects available for raising Practice Work/Class Test Syllabus today!",
       );
       homePageClick();
     } else {
@@ -617,7 +617,7 @@ function createMainAccordion(inputId) {
         </div>
 
         <div class="radio-content-inbox">
-          Homework
+          Practice Work
         </div>
       `;
         } else {
