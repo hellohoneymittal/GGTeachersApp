@@ -339,7 +339,7 @@ body {
   padding-right: 10px; /* Optional: Adds some space to the right for scroll bar */
   flex-grow: 1;
   overflow-y: auto;
-  max-height: 50vh; /* Adjust for better balance */
+  max-height: 60vh; /* Adjust for better balance */
   margin-bottom: 10px;
 }
 
@@ -753,6 +753,13 @@ body {
   overflow: auto;
   max-width: 100%;
   margin-bottom: 1rem;
+}
+
+.collection-table-container table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  border: 2px solid black;
 }
 
 table {

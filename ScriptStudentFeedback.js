@@ -1019,11 +1019,11 @@ function createFeedbackQuestionTable(questionMap) {
 
   return `
 
-    <div class="feedback-question-table-wrapper">
+    <div class="collection-table-container scrollable-content-table">
 
       <table class="feedback-question-table">
 
-        <thead>
+        <thead class="table-header">
 
           <tr>
 
