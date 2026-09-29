@@ -1318,7 +1318,7 @@ function createTeacherAttendanceTable(
   });
 
   return `
-    <div class="feedback-question-table-wrapper">
+    <div class="collection-table-container scrollable-content-table">
 
       <table class="
         ${hideTeacher ? "feedback-question-table2" : "feedback-question-table3"}
@@ -1326,7 +1326,7 @@ function createTeacherAttendanceTable(
         ${hideTeacher ? "teacher-attendance-teacher-table" : "teacher-attendance-class-subject-table"}
       ">
 
-        <thead>
+        <thead class="table-header">
           <tr>
 
             ${
@@ -1496,7 +1496,7 @@ function renderDefaultTeacherAttendanceReport() {
 
     </div>
 
-    <div class="feedback-question-table-wrapper">
+    <div class="collection-table-container scrollable-content-table">
 
       <table class="
   feedback-question-table
@@ -1505,7 +1505,7 @@ function renderDefaultTeacherAttendanceReport() {
   ${showExamColumn ? "all-exams" : "selected-exam"}
 ">
 
-        <thead>
+        <thead class="table-header">
           <tr>
 
             <th>Class - Subject</th>

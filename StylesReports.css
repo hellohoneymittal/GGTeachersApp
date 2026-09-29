@@ -82,11 +82,6 @@
    QUESTION-WISE TABLE
 ========================= */
 
-.feedback-question-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
 .feedback-question-table {
   width: 100%;
   border-collapse: collapse;
