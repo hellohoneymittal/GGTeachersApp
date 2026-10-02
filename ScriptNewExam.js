@@ -781,7 +781,10 @@ function moveToNextPendingStudent() {
     }
   }
 
-  SHOW_INFO_POPUP("All students have been saved.");
+  SHOW_CONFIRMATION_POPUP(
+    "All students have been saved. Submit response?",
+    submitExamMarks,
+  );
 }
 
 function clearStudent() {
@@ -982,7 +985,7 @@ function validateCurrentStudent() {
   return valid_status;
 }
 
-async function submitAllStudents() {
+function submitAllStudents() {
   inputMarksDetails = {};
 
   inputMarksDetails.class = selectedExamClass;
