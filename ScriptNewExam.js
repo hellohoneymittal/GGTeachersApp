@@ -205,9 +205,12 @@ function attachMarksEvents() {
     .getElementById("clearStudentBtn")
     .addEventListener("click", clearStudent);
 
-  document
-    .getElementById("submitAllBtn")
-    .addEventListener("click", submitAllStudents);
+  document.getElementById("submitAllBtn").addEventListener("click", () => {
+    SHOW_CONFIRMATION_POPUP(
+      "Are you sure you want to submit the marks?",
+      submitExamMarks,
+    );
+  });
 }
 
 function renderStudentList() {
@@ -985,7 +988,7 @@ function validateCurrentStudent() {
   return valid_status;
 }
 
-function submitAllStudents() {
+async function submitExamMarks() {
   inputMarksDetails = {};
 
   inputMarksDetails.class = selectedExamClass;
@@ -1004,13 +1007,6 @@ function submitAllStudents() {
     };
   });
 
-  SHOW_CONFIRMATION_POPUP(
-    "Are you sure you want to submit the marks?",
-    submitExamMarks,
-  );
-}
-
-async function submitExamMarks() {
   console.log(inputMarksDetails);
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.SUBMIT_EXAM_MARKS,
