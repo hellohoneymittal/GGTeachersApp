@@ -657,6 +657,8 @@ async function callMarkAttendanceClick() {
     apiPayload["sendWhatsappFlag"] = 1;
     CALL_API_WITHOUT_LOADING(API_TYPE_CONSTANT.SAVE_ATTENDANCE, apiPayload);
     SHOW_SUCCESS_POPUP("Attendance marked successfully!", async () => {
+      teacherMarkTime = "";
+
       if (selectedClass.includes("Keshava") || japaFlag == 1) {
         homePageClick();
         return;
