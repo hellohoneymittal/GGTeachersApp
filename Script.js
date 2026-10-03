@@ -645,6 +645,7 @@ async function callMarkAttendanceClick() {
     //lessonPlan: lessonPlanStr,
     attendance: attendanceStr,
     sendWhatsappFlag: 0,
+    markTime: teacherMarkTime,
   };
 
   const outputData = await CALL_API(

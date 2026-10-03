@@ -2,6 +2,7 @@ let selectedTeacher = "";
 let selectedClass = "";
 let selectedSubject = "";
 let examNextDay = 0;
+let teacherMarkTime = "";
 
 const questions = [
   {
@@ -513,6 +514,7 @@ async function openAttendanceWindow() {
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
   let ignoreTeachers = [];
   let result = 0;
+  teacherMarkTime = now;
 
   if (now.getDay() === 0) {
     SHOW_INFO_POPUP("⚠️ Cannot mark attendance on a Sunday!");
