@@ -1037,7 +1037,19 @@
           </div>
           <div id="studentsMarksWindow"></div>
           <div class="button-row">
-            <button class="purple" onclick="checkSelectedTest(1)">Back</button>
+            <button
+              class="purple"
+              onclick="
+                SHOW_CONFIRMATION_POPUP(
+                  'Go Back WITHOUT Submitting Marks?',
+                  () => {
+                    checkSelectedTest(1);
+                  },
+                )
+              "
+            >
+              Back
+            </button>
             <button id="clearStudentBtn" class="red">Clear Form</button>
 
             <button id="saveStudentBtn" class="yellow">Save Student</button>

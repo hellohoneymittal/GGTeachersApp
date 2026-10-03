@@ -287,7 +287,7 @@ async function openExamsWindow() {
   document.getElementById("examsubject").value = "";
   document.getElementById("pendingexam").value = "";
 
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_READ(
     API_TYPE_CONSTANT.GET_TEACHER_PENDING_EXAMS,
     selectedTeacher,
   );
