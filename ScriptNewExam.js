@@ -54,12 +54,13 @@ function updateCommentVisibility(
   const commentDivider = document.getElementById(
     "comment_divider_" + studentCol,
   );
+  const commentLabel = document.getElementById("comment_label_" + studentCol);
 
   const commentBox = document.getElementById("comment_" + studentCol);
 
   const commentErr = document.getElementById("Errcomment_" + studentCol);
 
-  if (!commentDivider || !commentBox || !commentErr) return;
+  if (!commentDivider || !commentBox || !commentErr || !commentLabel) return;
 
   const hasComment = commentBox.value.trim() !== "";
 
@@ -73,10 +74,12 @@ function updateCommentVisibility(
     commentDivider.style.display = "block";
     commentBox.style.display = "block";
     commentErr.style.display = "block";
+    commentLabel.style.display = "block";
   } else {
     commentDivider.style.display = "none";
     commentBox.style.display = "none";
     commentErr.style.display = "none";
+    commentLabel.style.display = "none";
   }
 }
 
@@ -136,6 +139,7 @@ function loadStudents() {
       index: index,
       name: arr[0],
       col: arr[1],
+      incomingMarks: arr.length == 3 ? arr[2] : "",
 
       saved: false,
       dirty: false,
@@ -301,17 +305,66 @@ function selectStudent(index) {
 }
 
 function renderStudent() {
-  const student = studentList[currentStudentIndex];
-  // Reset control references every time the UI is rendered
-  student.controls = {};
+  let student = studentList[currentStudentIndex];
+  let incomingMarks = student.incomingMarks;
 
-  const studentName = student.name;
-  const studentCol = student.col;
   let marks = -1;
   let wmarks = -1;
   let gmarks = -1;
   let lmarks = -1;
 
+  if (incomingMarks) {
+    let marksStringSplit = incomingMarks.split("\nComments\n");
+    let marksSplitArr = marksStringSplit[0].split("\n");
+    student.data.comment = marksStringSplit[1] || "";
+    student.data.feedback = [];
+
+    let i;
+
+    for (i = 0; i < marksSplitArr.length; i++) {
+      if (!marksSplitArr[i].includes(" - "))
+        student.data.total = Number(marksSplitArr[i]);
+      else {
+        let splitMarks = Number(marksSplitArr[i].split(" - ")[1]);
+        switch (marksSplitArr[i].split(" - ")[0]) {
+          case "L":
+            student.data.literature = splitMarks;
+            break;
+          case "W":
+            student.data.writing = splitMarks;
+            break;
+          case "G":
+            student.data.grammar = splitMarks;
+            break;
+          case "H":
+            let exam_type = selectedExamDetails.examName;
+            student.data.handwriting = exam_type.includes("Class Test")
+              ? splitMarks / 1.5
+              : exam_type.includes("Unit Test")
+                ? splitMarks / 2.5
+                : splitMarks / 10;
+
+            break;
+        }
+      }
+    }
+    student.saved = true;
+    clearDirty();
+
+    renderStudentList();
+
+    updateProgress();
+
+    moveToNextPendingStudent(0);
+  }
+
+  student = studentList[currentStudentIndex];
+
+  // Reset control references every time the UI is rendered
+  student.controls = {};
+
+  const studentName = student.name;
+  const studentCol = student.col;
   const panel = document.getElementById("studentPanel");
 
   panel.innerHTML = "";
@@ -331,6 +384,10 @@ function renderStudent() {
   label.className = "required";
 
   studentDiv.appendChild(label);
+
+  let divider = document.createElement("hr");
+  divider.className = "divider";
+  studentDiv.appendChild(divider);
 
   if (marksArr.length == 1) {
     const input_marks = document.createElement("input");
@@ -352,6 +409,14 @@ function renderStudent() {
       marks = Number(student.data.total);
     }
 
+    // Create label
+    const marksLabel = document.createElement("label");
+    marksLabel.innerText = "Total Marks";
+    marksLabel.className = "required";
+
+    // Add to page
+    studentDiv.appendChild(marksLabel);
+
     studentDiv.appendChild(input_marks);
 
     const marksErr = document.createElement("div");
@@ -363,9 +428,6 @@ function renderStudent() {
     input_marks.addEventListener("change", () => {
       markDirty();
       if (validateNumber(input_marks, maxMarks)) {
-        let comment_divider = document.getElementById(
-          "comment_divider_" + studentCol,
-        );
         let commentBox = document.getElementById("comment_" + studentCol);
         let commentErr = document.getElementById("Err" + commentBox.id);
 
@@ -393,13 +455,20 @@ function renderStudent() {
     writing_input_marks.value = ""; // pre-fill value
     writing_input_marks.className = "gg-name-exam";
     writing_input_marks.id = "marks_writing_" + studentCol;
-    writing_input_marks.placeholder =
-      "Writing Marks (0 to " + marksArr[1] + ")";
+    writing_input_marks.placeholder = "Enter Marks (0 to " + marksArr[1] + ")";
 
     if (student.data.writing !== undefined) {
       writing_input_marks.value = student.data.writing;
       wmarks = Number(student.data.writing);
     }
+
+    // Create label
+    const marksLabelW = document.createElement("label");
+    marksLabelW.innerText = "Writing Section Marks";
+    marksLabelW.className = "required";
+
+    // Add to page
+    studentDiv.appendChild(marksLabelW);
 
     studentDiv.appendChild(writing_input_marks);
 
@@ -412,9 +481,6 @@ function renderStudent() {
     writing_input_marks.addEventListener("change", () => {
       markDirty();
       if (validateNumber(writing_input_marks, marksArr[1])) {
-        let comment_divider = document.getElementById(
-          "comment_divider_" + studentCol,
-        );
         let commentBox = document.getElementById("comment_" + studentCol);
         let commentErr = document.getElementById("Err" + commentBox.id);
 
@@ -432,7 +498,7 @@ function renderStudent() {
       }
     });
 
-    let divider = document.createElement("hr");
+    divider = document.createElement("hr");
     divider.className = "divider";
     studentDiv.appendChild(divider);
 
@@ -448,13 +514,20 @@ function renderStudent() {
     grammar_input_marks.inputmode = "numeric";
     grammar_input_marks.className = "gg-name-exam";
     grammar_input_marks.id = "marks_grammar_" + studentCol;
-    grammar_input_marks.placeholder =
-      "Grammar Marks (0 to " + marksArr[2] + ")";
+    grammar_input_marks.placeholder = "Enter Marks (0 to " + marksArr[2] + ")";
 
     if (student.data.grammar !== undefined) {
       grammar_input_marks.value = student.data.grammar;
       gmarks = Number(student.data.grammar);
     }
+
+    // Create label
+    const marksLabelG = document.createElement("label");
+    marksLabelG.innerText = "Grammar Section Marks";
+    marksLabelG.className = "required";
+
+    // Add to page
+    studentDiv.appendChild(marksLabelG);
 
     studentDiv.appendChild(grammar_input_marks);
 
@@ -467,9 +540,6 @@ function renderStudent() {
     grammar_input_marks.addEventListener("change", () => {
       markDirty();
       if (validateNumber(grammar_input_marks, marksArr[2])) {
-        let comment_divider = document.getElementById(
-          "comment_divider_" + studentCol,
-        );
         let commentBox = document.getElementById("comment_" + studentCol);
         let commentErr = document.getElementById("Err" + commentBox.id);
 
@@ -504,12 +574,20 @@ function renderStudent() {
     literature_input_marks.required = true;
     literature_input_marks.id = "marks_literature_" + studentCol;
     literature_input_marks.placeholder =
-      "Literature Marks (0 to " + marksArr[3] + ")";
+      "Enter Marks (0 to " + marksArr[3] + ")";
 
     if (student.data.literature !== undefined) {
       literature_input_marks.value = student.data.literature;
       lmarks = Number(student.data.literature);
     }
+
+    // Create label
+    const marksLabelL = document.createElement("label");
+    marksLabelL.innerText = "Literature Section Marks";
+    marksLabelL.className = "required";
+
+    // Add to page
+    studentDiv.appendChild(marksLabelL);
 
     studentDiv.appendChild(literature_input_marks);
 
@@ -522,9 +600,6 @@ function renderStudent() {
     literature_input_marks.addEventListener("change", () => {
       markDirty();
       if (validateNumber(literature_input_marks, marksArr[3])) {
-        let comment_divider = document.getElementById(
-          "comment_divider_" + studentCol,
-        );
         let commentBox = document.getElementById("comment_" + studentCol);
         let commentErr = document.getElementById("Err" + commentBox.id);
         lmarks = Number(literature_input_marks.value.trim());
@@ -558,6 +633,16 @@ function renderStudent() {
   comments.style.display = "none";
   comments.placeholder =
     "Please mention areas for improvement as marks < 50%. Comment will be shared with parent and tuition teacher!";
+
+  // Create label
+  const commentsLabel = document.createElement("label");
+  commentsLabel.innerText = "Comments for Improvement";
+  commentsLabel.className = "required";
+  commentsLabel.style.display = "none";
+  commentsLabel.id = "comment_label_" + studentCol;
+
+  // Add to page
+  studentDiv.appendChild(commentsLabel);
   studentDiv.appendChild(comments);
 
   comments.value = student.data.comment || "";
@@ -590,11 +675,19 @@ function renderStudent() {
     handwriting_marks.required = true;
     handwriting_marks.className = "gg-name-exam";
     handwriting_marks.id = "marks_handwriting_" + studentCol;
-    handwriting_marks.placeholder = "Handwriting Marks (0 to 10)";
+    handwriting_marks.placeholder = "Enter Marks (0 to 10)";
 
     if (student.data.handwriting !== undefined) {
       handwriting_marks.value = student.data.handwriting;
     }
+
+    // Create label
+    const marksLabelH = document.createElement("label");
+    marksLabelH.innerText = "Handwriting Marks";
+    marksLabelH.className = "required";
+
+    // Add to page
+    studentDiv.appendChild(marksLabelH);
 
     studentDiv.appendChild(handwriting_marks);
 
@@ -764,7 +857,7 @@ function saveStudent() {
   moveToNextPendingStudent();
 }
 
-function moveToNextPendingStudent() {
+function moveToNextPendingStudent(confirmFlag = 1) {
   for (let i = currentStudentIndex + 1; i < studentList.length; i++) {
     if (!studentList[i].saved) {
       selectStudent(i);
@@ -776,18 +869,20 @@ function moveToNextPendingStudent() {
   // If there are no pending students after the current one,
   // wrap around to the beginning.
 
-  for (let i = 0; i < currentStudentIndex; i++) {
-    if (!studentList[i].saved) {
-      selectStudent(i);
+  if (confirmFlag == 1) {
+    for (let i = 0; i < currentStudentIndex; i++) {
+      if (!studentList[i].saved) {
+        selectStudent(i);
 
-      return;
+        return;
+      }
     }
-  }
 
-  SHOW_CONFIRMATION_POPUP(
-    "All students have been saved. Submit response?",
-    submitExamMarks,
-  );
+    SHOW_CONFIRMATION_POPUP(
+      "All students have been saved. Submit response?",
+      submitExamMarks,
+    );
+  }
 }
 
 function clearStudent() {
@@ -857,6 +952,12 @@ function clearCurrentStudentControls() {
 
     if (divider) {
       divider.style.display = "none";
+    }
+
+    const label = document.getElementById("comment_label_" + currentStudentCol);
+
+    if (label) {
+      label.style.display = "none";
     }
   }
 
