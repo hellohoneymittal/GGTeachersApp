@@ -1097,16 +1097,13 @@ async function CALL_API(apiType, data) {
       apiType: apiType,
       inputData: data,
     };
-    try {
-      const response = await API_HANDLER_AXIOS(request);
-      if (response) {
-        return response;
-        //
-      } else {
-        SHOW_ERROR_POPUP("Something Went Wrong");
-      }
-    } catch (ex) {
-      SHOW_ERROR_POPUP("Error :- " + ex);
+
+    const response = await API_HANDLER_AXIOS(request);
+    if (response) {
+      return response;
+      //
+    } else {
+      SHOW_ERROR_POPUP("Something Went Wrong");
     }
   }
 }
@@ -1130,6 +1127,27 @@ async function CALL_API_WITHOUT_LOADING(apiType, data) {
       SHOW_ERROR_POPUP("Error :- " + ex);
     }
   }
+}
+
+async function CALL_API_READ(apiType, inputData = {}) {
+  let response;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    console.log(`API READ Attempt ${attempt}/3 : ${apiType}`);
+
+    response = await CALL_API(apiType, inputData);
+
+    if (response?.status) {
+      console.log(`API READ Success on Attempt ${attempt} : ${apiType}`);
+      break;
+    }
+
+    if (attempt < 3) {
+      console.log(`API READ failed. Retrying... : ${apiType}`);
+    }
+  }
+
+  return response;
 }
 
 function SHOW_BUTTON_BY_ADMIN_ROLE(buttonId, roleKey, roleObj) {
