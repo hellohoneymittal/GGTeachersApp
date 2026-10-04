@@ -457,14 +457,15 @@ async function submitLeaves() {
     typeof outputData.response === "string"
   ) {
     console.log(outputData.response);
-    if (outputData.response == "ok")
+    if (outputData.response == "ok") {
+      checkLeavesAndSendWhatsapp();
       SHOW_SUCCESS_POPUP(
         "Leaves submitted Successfully for " + selectedTeacher + "!",
         () => {
           SHOW_SPECIFIC_DIV("menuPopup");
         },
       );
-    else
+    } else
       SHOW_ERROR_POPUP(
         "Unable to submit leaves for: " +
           selectedTeacher +
@@ -475,4 +476,62 @@ async function submitLeaves() {
     SHOW_ERROR_POPUP("Unable to submit leaves for: " + selectedTeacher + "!!");
 
   return;
+}
+
+function checkLeavesAndSendWhatsapp() {
+  const checkedCheckboxes = document.querySelectorAll(
+    '#classSubject input[type="checkbox"]:checked',
+  );
+
+  const startDate = new Date(leaveData.start + "T00:00:00");
+  const endDate = new Date(leaveData.end + "T00:00:00");
+
+  const whatsappLeaves = {};
+
+  checkedCheckboxes.forEach((cb) => {
+    const classSubject = cb.value;
+
+    const leaves = JSON.parse(cb.dataset.leaves || "{}");
+
+    Object.entries(leaves).forEach(([date, subjects]) => {
+      const [day, month, year] = date.split("/");
+
+      const leaveDate = new Date(`${year}-${month}-${day}T00:00:00`);
+
+      if (leaveDate >= startDate && leaveDate <= endDate) {
+        const totalLeaves = subjects.length + 1;
+
+        if (totalLeaves >= 3) {
+          if (!whatsappLeaves[date]) {
+            whatsappLeaves[date] = [];
+          }
+
+          if (!whatsappLeaves[date].includes(classSubject)) {
+            whatsappLeaves[date].push(classSubject);
+          }
+        }
+      }
+    });
+  });
+
+  let whatsappMessage =
+    "Hare Krishna. Dandwat Pranaam!\n\nFollowing classes have more than 2 teachers on leaves on the below date(s):\n\n";
+
+  Object.entries(whatsappLeaves).forEach(([date, classes]) => {
+    whatsappMessage += `${date}:\n`;
+
+    classes.forEach((classSubject) => {
+      whatsappMessage += `• ${classSubject.split(" - ")[0]}\n`;
+    });
+
+    whatsappMessage += "\n\nYour servant";
+  });
+
+  if (whatsappMessage) {
+    CALL_API_WITHOUT_LOADING("SEND_ADMIN_WHATSAPP", {
+      msg: whatsappMessage,
+      group: "GG exam & curriculam dept",
+    });
+    console.log(whatsappMessage);
+  }
 }
