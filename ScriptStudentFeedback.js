@@ -32,7 +32,7 @@ async function openStudentFeedback() {
 
   const examSelect = document.getElementById("studentFeedbackExam");
 
-  const outputData = await CALL_API("PENDING_STUDENT_FEEDBACK", {});
+  const outputData = await CALL_API_READ("PENDING_STUDENT_FEEDBACK", {});
 
   if (classSelect) {
     classSelect.value = "";
@@ -567,7 +567,7 @@ let feedbackReportExam = "";
 ========================================================= */
 
 async function openStudentFeedbackReport() {
-  const response = await CALL_API("GET_STUDENT_FEEDBACK", {});
+  const response = await CALL_API_READ("GET_STUDENT_FEEDBACK", {});
 
   if (!response || response.status !== true) {
     SHOW_ERROR_POPUP(

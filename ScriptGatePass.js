@@ -2,7 +2,7 @@ let gatePassData = {};
 
 async function openGatePassWindow() {
   let i;
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_READ(
     API_TYPE_CONSTANT.GET_PENDING_GATE_PASSES,
     "",
   );

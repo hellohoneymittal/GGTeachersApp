@@ -879,8 +879,11 @@ function moveToNextPendingStudent(confirmFlag = 1) {
     }
 
     SHOW_CONFIRMATION_POPUP(
-      "All students have been saved. Submit response?",
+      "All students have been saved. Submit response or continue to edit marks?",
       submitExamMarks,
+      CLOSE_CONFIRMATION_POPUP,
+      "Submit All Marks",
+      "Edit Marks",
     );
   }
 }

@@ -105,7 +105,7 @@ function resetLeaveForm(show_confirmation = 0) {
 }
 
 async function openLeavesWindow() {
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_READ(
     API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_BY_NAME,
     selectedTeacher,
   );
@@ -172,59 +172,109 @@ async function openLeavesWindow() {
     // 🔹 Apply min to start date
     startInput.min = minStartStr;
 
-    // 🔹 Validate start date
-    startInput.addEventListener("change", function () {
+    // 🔹 Reset checkboxes and reason
+    function resetSelections() {
       const checkboxes = document.querySelectorAll(
         '#classSubject input[type="checkbox"]',
       );
 
-      if (startInput.value < minStartStr) {
-        startErr.innerText = `Start date must be ${offset === 1 ? "tomorrow" : "day after tomorrow"} or later`;
-        startInput.value = "";
-      } else {
+      checkboxes.forEach((cb) => {
+        cb.checked = false;
+        cb.disabled = true;
+
+        const label = cb.labels[0];
+        label.classList.remove(enabled_lable_class);
+        label.classList.add(disbaled_lable_class);
+      });
+
+      reasonBox.disabled = true;
+      reasonBox.value = "";
+      reasonBoxErr.innerHTML = "";
+      nextButton.disabled = true;
+    }
+
+    // 🔹 Enable checkboxes and reason
+    function enableSelections() {
+      const checkboxes = document.querySelectorAll(
+        '#classSubject input[type="checkbox"]',
+      );
+
+      checkboxes.forEach((cb) => {
+        cb.disabled = false;
+
+        const label = cb.labels[0];
+        label.classList.remove(disbaled_lable_class);
+        label.classList.add(enabled_lable_class);
+      });
+
+      reasonBox.disabled = false;
+    }
+
+    // 🔹 Validate Start Date
+    startInput.addEventListener("change", function () {
+      // Start date changed → clear previous selections
+      resetSelections();
+
+      if (!startInput.value) {
         startErr.innerText = "";
-        // 🔹 Set end date min = selected start date
-        endInput.min = startInput.value;
-        endInput.disabled = false;
         endInput.value = "";
-        checkboxes.forEach((cb) => {
-          const label = cb.labels[0];
-          label.classList.remove(disbaled_lable_class);
-          label.classList.add(enabled_lable_class);
-          cb.disabled = false; // enable only if date selected
-        });
+        endInput.disabled = true;
+        return;
       }
 
-      if (startInput.value == "") {
-        endInput.disabled = true;
+      // Validate start date
+      if (startInput.value < minStartStr) {
+        startErr.innerText = `Start date must be ${
+          offset === 1 ? "tomorrow" : "day after tomorrow"
+        } or later`;
+
+        startInput.value = "";
         endInput.value = "";
-        checkboxes.forEach((cb) => {
-          const label = cb.labels[0];
-          label.classList.remove(enabled_lable_class);
-          label.classList.add(disbaled_lable_class);
-          cb.checked = false;
-          cb.disabled = true; // enable only if date selected
-          reasonBox.disabled = true;
-          reasonBox.value = ""; // clear when disabled
-          reasonBoxErr.innerHTML = "";
-          nextButton.disabled = true;
-        });
+        endInput.disabled = true;
+
+        return;
       }
+
+      // Valid start date
+      startErr.innerText = "";
+
+      // 🔹 End date defaults to Start Date
+      endInput.min = startInput.value;
+      endInput.value = startInput.value;
+      endInput.disabled = false;
+
+      // 🔹 Enable checkboxes + reason immediately
+      enableSelections();
     });
 
-    // 🔹 Validate end date
+    // 🔹 Validate End Date
     endInput.addEventListener("change", function () {
+      // End date changed → clear previous selections
+      resetSelections();
+
       if (!endInput.value) {
         endErr.innerText = "";
+
+        // Since end date is empty, don't allow selections
         return;
       }
 
       if (endInput.value < startInput.value) {
         SHOW_ERROR_POPUP("End date cannot be earlier than start date");
-        endInput.value = "";
-      } else {
+
+        endInput.value = startInput.value;
         endErr.innerText = "";
+
+        // Start date is still valid, so selections can be enabled
+        enableSelections();
+
+        return;
       }
+
+      endErr.innerText = "";
+
+      // Valid date range → enable selections
+      enableSelections();
     });
 
     checkboxList.addEventListener("change", function (e) {
@@ -264,23 +314,96 @@ async function openLeavesWindow() {
     checkboxContent.id = "dynamic-feedback-list";
 
     Object.entries(outputData.response.data).forEach(
-      ([className, subjects]) => {
-        // 🔹 Subjects
-        subjects.forEach((subj) => {
+      ([className, classData]) => {
+        classData.subjects.forEach((subj) => {
           const feedbackId = `${className} - ${subj}`;
+          const checkboxId = feedbackId.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+          // Get leaves for this particular class
+          const leaves = classData.leaves || {};
 
           const option = document.createElement("div");
           option.classList.add("options");
 
           option.innerHTML = `
-            <input type="checkbox" id="${feedbackId}" name="classSubjectList" value="${feedbackId}" class="custom-checkbox" disabled>
-            <label for="${feedbackId}" class=${disbaled_lable_class}>${feedbackId}</label>
-            `;
+        <input 
+          type="checkbox"
+          id="${checkboxId}"
+          name="classSubjectList"
+          value="${feedbackId}"
+          class="custom-checkbox"
+          disabled
+          data-leaves='${JSON.stringify(leaves)}'
+        >
+
+        <label 
+          for="${checkboxId}"
+          class="${disbaled_lable_class}"
+        >
+          ${feedbackId}
+        </label>
+      `;
 
           checkboxContent.appendChild(option);
         });
       },
     );
+
+    checkboxContent.addEventListener("change", function (e) {
+      if (e.target.type !== "checkbox") return;
+
+      if (!e.target.checked) return;
+
+      const startDate = startInput.value;
+      const endDate = endInput.value || startInput.value;
+
+      // Don't check if dates are not selected
+      if (!startDate || !endDate) return;
+
+      // Get leaves stored in checkbox
+      const leaves = JSON.parse(e.target.dataset.leaves || "{}");
+
+      let existingLeaves = [];
+
+      Object.entries(leaves).forEach(([date, subjects]) => {
+        // Convert DD/MM/YYYY to YYYY-MM-DD
+        const [day, month, year] = date.split("/");
+        const leaveDate = `${year}-${month}-${day}`;
+
+        // Check whether leave date is within selected range
+        if (leaveDate >= startDate && leaveDate <= endDate) {
+          existingLeaves.push({
+            date: date,
+            subjects: subjects,
+          });
+        }
+      });
+
+      // Show popup only if leave exists in the selected range
+      if (existingLeaves.some((leave) => leave.subjects.length >= 2)) {
+        let message = `2 or more teachers of ${e.target.value.split(" - ")[0]} already on leave on:\n\n\n`;
+
+        existingLeaves
+          .filter((leave) => leave.subjects.length >= 2)
+          .forEach((leave) => {
+            message += `${leave.date}: ${leave.subjects.join(", ")}\n`;
+          });
+
+        message +=
+          "\n\nDo you want to Continue or Modify your leaves for above day(s)?";
+
+        SHOW_CONFIRMATION_POPUP(
+          message,
+          CLOSE_CONFIRMATION_POPUP,
+          () => {
+            resetLeaveForm();
+            CLOSE_CONFIRMATION_POPUP();
+          },
+          "Continue",
+          "Modify",
+        );
+      }
+    });
 
     checkboxList.appendChild(checkboxContent);
   } else {
@@ -315,7 +438,7 @@ function moveNextStep() {
   SHOW_CONFIRMATION_GRID_POPUP(
     result.gridData,
     result.columns,
-    () => SHOW_CONFIRMATION_POPUP("Are you sure to proceed!", submitLeaves),
+    submitLeaves,
     "Submit",
     "Edit",
     "Verify Details!",

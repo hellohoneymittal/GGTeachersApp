@@ -333,7 +333,7 @@ async function submitPass() {
       password: password,
       roleName: "all",
     };
-    const outputData = await CALL_API(
+    const outputData = await CALL_API_READ(
       API_TYPE_CONSTANT.GET_TEACHER_ACCESS_BY_PASSWORD,
       inputData,
     );
@@ -665,7 +665,7 @@ async function callMarkAttendanceClick() {
       }
 
       if (selectedSubject) {
-        const outputData1 = await CALL_API(
+        const outputData1 = await CALL_API_READ(
           API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
           selectedTeacher,
         );
@@ -924,7 +924,7 @@ function resetFormGenData(moveAway = 0) {
 }
 
 async function openTimeTableWindow() {
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_READ(
     API_TYPE_CONSTANT.GET_TEACHER_TIMETABLE,
     selectedTeacher,
   );
@@ -958,7 +958,7 @@ async function openTimeTableWindow() {
 }
 
 async function distributeQPWindow() {
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_READ(
     API_TYPE_CONSTANT.GET_CLASS_EXAM_SCHEDULE,
     selectedTeacher,
   );
@@ -1119,7 +1119,7 @@ function processPasswordSessionData(text, subjectMap) {
 }
 
 async function openStudentPasswordWindow() {
-  let passwordOutputData = await CALL_API("GET_STUDENT_PASSWORD", {});
+  let passwordOutputData = await CALL_API_READ("GET_STUDENT_PASSWORD", {});
 
   if (passwordOutputData?.status && passwordOutputData.data) {
     if (
@@ -1172,7 +1172,10 @@ document
   .addEventListener("change", loadTimetableSchedule);
 
 async function openTimetableWindow() {
-  const outputData = await CALL_API(API_TYPE_CONSTANT.GET_ALL_TIMETABLE, {});
+  const outputData = await CALL_API_READ(
+    API_TYPE_CONSTANT.GET_ALL_TIMETABLE,
+    {},
+  );
   if (outputData?.status && outputData.response) {
     if (typeof outputData.response === "string") {
       if (outputData.response.includes("ERR"))

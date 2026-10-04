@@ -15,7 +15,7 @@ document.addEventListener("input", function (e) {
   }
 });
 async function yearlyAdmissionFinanceClick() {
-  const response = await CALL_API("RETRIEVE_STUDENT_SUBMISSIONS", {});
+  const response = await CALL_API_READ("RETRIEVE_STUDENT_SUBMISSIONS", {});
 
   if (response.status) {
     const modifiedData = transformSheetData(response?.response || []);
