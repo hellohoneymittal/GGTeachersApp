@@ -83,7 +83,7 @@ sessionSelect.addEventListener("change", function () {
 
 async function openComputerExamWindow() {
   let i, j;
-  const outputData = await CALL_API("GET_COMPUTER_EXAMS", {
+  const outputData = await CALL_API_READ("GET_COMPUTER_EXAMS", {
     teacherName: selectedTeacher,
   });
 
@@ -143,7 +143,7 @@ document
   .addEventListener("change", loadExamSchedule);
 
 async function openDateSheetWindow() {
-  const outputData = await CALL_API(API_TYPE_CONSTANT.GET_DATESHEET, {});
+  const outputData = await CALL_API_READ(API_TYPE_CONSTANT.GET_DATESHEET, {});
   if (outputData?.status && outputData.response) {
     if (typeof outputData.response === "string") {
       if (outputData.response.includes("ERR"))

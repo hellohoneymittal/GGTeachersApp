@@ -81,7 +81,7 @@ function mergeUTIntoAnnual(data) {
 async function getUTList(selectedClassUT, selectedSubjectUT, selectedUT) {
   if (selectedUT !== "ALL") return [];
 
-  const res = await CALL_API(API_TYPE_CONSTANT.GET_ALL_UT_CHAPTERS, {
+  const res = await CALL_API_READ(API_TYPE_CONSTANT.GET_ALL_UT_CHAPTERS, {
     className: selectedClassUT,
     subjectName: selectedSubjectUT,
   });
@@ -124,7 +124,7 @@ async function submitSyllabus() {
     switch (true) {
       /* ---------- CASE 0 ---------- */
       case selectedSubjectUT === "ALL_SUBJECTS" && selectedUT === "ALL": {
-        const res = await CALL_API(API_TYPE_CONSTANT.GET_FULL_SYLLABUS, {
+        const res = await CALL_API_READ(API_TYPE_CONSTANT.GET_FULL_SYLLABUS, {
           className: selectedClassUT,
         });
 
@@ -148,7 +148,7 @@ async function submitSyllabus() {
 
       /* ---------- CASE 1 ---------- */
       case selectedSubjectUT === "ALL_SUBJECTS": {
-        const res = await CALL_API(
+        const res = await CALL_API_READ(
           API_TYPE_CONSTANT.GET_ALL_SUBJECTS_SYLLABUS,
           { className: selectedClassUT, utName: selectedUT },
         );
@@ -187,7 +187,7 @@ async function submitSyllabus() {
 
       /* ---------- CASE 3 ---------- */
       default: {
-        const res = await CALL_API(API_TYPE_CONSTANT.GET_UT_CHAPTERS, {
+        const res = await CALL_API_READ(API_TYPE_CONSTANT.GET_UT_CHAPTERS, {
           className: selectedClassUT,
           subjectName: selectedSubjectUT,
           utName: selectedUT,
@@ -476,7 +476,7 @@ async function proceedToMainScreen(type) {
     if (pwd?.length < 6) {
       return SHOW_ERROR_POPUP("Please enter password or correct password");
     }
-    const response = await CALL_API("CHECK_PASSWORD", {
+    const response = await CALL_API_READ("CHECK_PASSWORD", {
       password: pwd,
       roleName: "UT Syllabus App Role",
     });

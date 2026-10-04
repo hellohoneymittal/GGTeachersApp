@@ -449,6 +449,8 @@ function SHOW_CONFIRMATION_POPUP(
   message,
   yesCallback,
   noCallback = CLOSE_CONFIRMATION_POPUP,
+  yesLabel = "YES",
+  noLabel = "NO",
 ) {
   const popup = document.getElementById("confirmationPopup");
   const popupMessage = document.getElementById("confirmationMessage");
@@ -466,6 +468,9 @@ function SHOW_CONFIRMATION_POPUP(
   noButton.onclick = () => {
     noCallback();
   };
+
+  yesButton.innerText = yesLabel;
+  noButton.innerText = noLabel;
 
   // Show the popup
   popup.style.display = "flex";

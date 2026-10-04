@@ -83,7 +83,7 @@ async function getTeacherFeedback() {
   let input_map;
   let i, j;
 
-  const outputData = await CALL_API("GET_TEACHER_FEEDBACKS", {
+  const outputData = await CALL_API_READ("GET_TEACHER_FEEDBACKS", {
     teacherName: selectedTeacher,
   });
 
