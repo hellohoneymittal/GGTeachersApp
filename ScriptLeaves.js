@@ -381,12 +381,16 @@ async function openLeavesWindow() {
 
       // Show popup only if leave exists in the selected range
       if (existingLeaves.some((leave) => leave.subjects.length >= 2)) {
-        let message = `2 or more teachers of ${e.target.value.split(" - ")[0]} already on leave on:\n\n\n`;
+        let message = `2 or more teachers of ${e.target.value.split(" - ")[0]} already on leave on:\n\n`;
 
         existingLeaves
           .filter((leave) => leave.subjects.length >= 2)
           .forEach((leave) => {
-            message += `${leave.date}: ${leave.subjects.join(", ")}\n`;
+            const subjectNames = leave.subjects.map((item) => {
+              return item.split("%%")[0];
+            });
+
+            message += `${leave.date}: ${subjectNames.join(", ")}\n`;
           });
 
         message +=
@@ -491,6 +495,9 @@ function checkLeavesAndSendWhatsapp() {
   checkedCheckboxes.forEach((cb) => {
     const classSubject = cb.value;
 
+    // Class name from "Class - Subject"
+    const className = classSubject.split(" - ")[0];
+
     const leaves = JSON.parse(cb.dataset.leaves || "{}");
 
     Object.entries(leaves).forEach(([date, subjects]) => {
@@ -499,15 +506,32 @@ function checkLeavesAndSendWhatsapp() {
       const leaveDate = new Date(`${year}-${month}-${day}T00:00:00`);
 
       if (leaveDate >= startDate && leaveDate <= endDate) {
+        // Existing leaves + current/new leave
         const totalLeaves = subjects.length + 1;
 
         if (totalLeaves >= 3) {
           if (!whatsappLeaves[date]) {
-            whatsappLeaves[date] = [];
+            whatsappLeaves[date] = {};
           }
 
-          if (!whatsappLeaves[date].includes(classSubject)) {
-            whatsappLeaves[date].push(classSubject);
+          if (!whatsappLeaves[date][className]) {
+            whatsappLeaves[date][className] = [];
+          }
+
+          // Existing teachers
+          subjects.forEach((item) => {
+            const parts = item.split("%%");
+
+            const teacher = parts[1] || "";
+
+            if (teacher && !whatsappLeaves[date][className].includes(teacher)) {
+              whatsappLeaves[date][className].push(teacher);
+            }
+          });
+
+          // Add current/new teacher
+          if (!whatsappLeaves[date][className].includes(selectedTeacher)) {
+            whatsappLeaves[date][className].push(selectedTeacher);
           }
         }
       }
@@ -515,23 +539,29 @@ function checkLeavesAndSendWhatsapp() {
   });
 
   let whatsappMessage =
-    "Hare Krishna. Dandwat Pranaam!\n\nFollowing classes have more than 2 teachers on leaves on the below date(s):\n\n";
+    "Hare Krishna. Dandwat Pranaam!\n\n" +
+    "Following classes have more than 2 teachers on leaves " +
+    "on the below date(s):\n\n";
 
   Object.entries(whatsappLeaves).forEach(([date, classes]) => {
     whatsappMessage += `${date}:\n`;
 
-    classes.forEach((classSubject) => {
-      whatsappMessage += `• ${classSubject.split(" - ")[0]}\n`;
+    Object.entries(classes).forEach(([className, teachers]) => {
+      whatsappMessage += `• ${className} - ${teachers.join(", ")}\n`;
     });
 
-    whatsappMessage += "\n\nYour servant";
+    whatsappMessage += "\n";
   });
 
-  if (whatsappMessage) {
+  // Don't send WhatsApp if there are no qualifying leaves
+  if (Object.keys(whatsappLeaves).length > 0) {
+    whatsappMessage += "Your servant";
+
     CALL_API_WITHOUT_LOADING("SEND_ADMIN_WHATSAPP", {
       msg: whatsappMessage,
       group: "GG exam & curriculam dept",
     });
+
     console.log(whatsappMessage);
   }
 }
