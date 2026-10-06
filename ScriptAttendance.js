@@ -547,11 +547,6 @@ async function openAttendanceWindow() {
     console.log(`Inside Gurukul!`);
   }
 
-  const outputData = await CALL_API_READ(
-    API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
-    selectedTeacher,
-  );
-
   SHOW_INFO_POPUP(
     "Attendance Login Time: " +
       teacherMarkTime.toLocaleString("en-IN", {
@@ -559,6 +554,11 @@ async function openAttendanceWindow() {
         minute: "2-digit",
         hour12: false,
       }),
+  );
+
+  const outputData = await CALL_API(
+    API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
+    selectedTeacher,
   );
 
   if (outputData?.status && outputData.response) {
@@ -652,7 +652,7 @@ async function goToStudentContainer() {
 }
 
 async function getStudentDetails(inputLeaveFlag = 0) {
-  const outputData = await CALL_API_READ(API_TYPE_CONSTANT.STUDENT_DETAILS, {
+  const outputData = await CALL_API(API_TYPE_CONSTANT.STUDENT_DETAILS, {
     leaveFlag: inputLeaveFlag,
   });
   const studentTbody = document.getElementById("studentTable");

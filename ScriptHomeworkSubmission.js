@@ -170,7 +170,7 @@ async function openGenerateHomeworkWindow() {
   document.getElementById("raiseHWsubject").value = "";
   document.getElementById("raiseHWNext").disabled = true;
 
-  const outputData = await CALL_API_READ(
+  const outputData = await CALL_API(
     API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
     selectedTeacher,
   );
