@@ -170,25 +170,24 @@ async function openGenerateHomeworkWindow() {
   document.getElementById("raiseHWsubject").value = "";
   document.getElementById("raiseHWNext").disabled = true;
 
-  const outputData = await CALL_API(
+  const outputData = await CALL_API_CLOUDFLARE(
     API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
     selectedTeacher,
   );
-  if (outputData?.status && outputData.response) {
-    if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
-    ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+  if (outputData?.status && outputData.result) {
+    let finalResult = outputData.result.response.result;
+    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
       return;
     }
 
-    eligibleHWList = outputData.response.data;
-    if (outputData.response.infoMsg)
+    eligibleHWList = finalResult.data;
+
+    if (finalResult.infoMsg) {
       console.log(
-        "Information from Eligible Subject Function:\n\n" +
-          outputData.response.infoMsg,
+        "Information from Eligible Subject Function:\n\n" + finalResult.infoMsg,
       );
+    }
 
     if (Object.keys(eligibleHWList).length == 0) {
       SHOW_INFO_POPUP(
@@ -523,7 +522,8 @@ function showLPWindow(back_disabled = 0) {
     }
   }
 
-  SHOW_INFO_POPUP("Japa STARTED!\n\nPlease fill Today's Work!");
+  if (back_disabled == 1)
+    SHOW_INFO_POPUP("Japa STARTED!\n\nPlease fill Today's Work!");
   SHOW_SPECIFIC_DIV("selectLPContainer");
 }
 
