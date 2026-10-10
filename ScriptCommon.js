@@ -2335,3 +2335,62 @@ function PARSE_IST_DATE(dateString) {
 
   return null; //  unsupported format
 }
+
+async function CALL_API_CLOUDFLARE(apiType, data, timeout = 50000) {
+  const onlineRes = await IS_ONLINE();
+
+  if (!onlineRes) {
+    return null;
+  }
+
+  const request = {
+    apiType: apiType,
+    inputData: data,
+  };
+
+  const apiName = apiType.toLowerCase();
+
+  const url = `${BASE_URL_CLOUD_FLARE}${apiName}`;
+  try {
+    IsLoading(true);
+
+    const response = await axios.post(url, request, {
+      timeout: timeout,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("API STATUS:", response.status);
+    console.log("API DATA:", response.data);
+
+    const result = response?.data;
+
+    if (result?.status) {
+      return result;
+    }
+
+    console.error("Unexpected API response:", result);
+
+    SHOW_ERROR_POPUP("Something went wrong, please contact Gurukul Servants.");
+
+    return null;
+  } catch (error) {
+    console.error("API ERROR:", {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    SHOW_ERROR_POPUP(
+      error.response?.status
+        ? `API Error: ${error.response.status}`
+        : error.message,
+    );
+
+    return null;
+  } finally {
+    IsLoading(false);
+  }
+}

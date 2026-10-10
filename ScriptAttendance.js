@@ -514,7 +514,6 @@ async function openAttendanceWindow() {
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
   let ignoreTeachers = [];
   let result = 0;
-  teacherMarkTime = teacherMarkTime || now;
 
   if (now.getDay() === 0) {
     SHOW_INFO_POPUP("⚠️ Cannot mark attendance on a Sunday!");
@@ -547,6 +546,8 @@ async function openAttendanceWindow() {
     console.log(`Inside Gurukul!`);
   }
 
+  teacherMarkTime = teacherMarkTime || now;
+
   SHOW_INFO_POPUP(
     "Attendance Login Time: " +
       teacherMarkTime.toLocaleString("en-IN", {
@@ -556,27 +557,25 @@ async function openAttendanceWindow() {
       }),
   );
 
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.GET_TEACHER_CLASS_SUBJECTS_AND_STUDENTS_BY_NAME,
+  const outputData = await CALL_API_CLOUDFLARE(
+    "GET_TODAY_CLASS_DETAILS_FOR_TEACHER",
     selectedTeacher,
   );
 
-  if (outputData?.status && outputData.response) {
-    if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
-    ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+  if (outputData?.status && outputData.result) {
+    let finalResult = outputData.result.response.result;
+    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
       return;
     }
 
-    if (Object.keys(outputData.response.data).length == 0) {
+    if (Object.keys(finalResult.data).length == 0) {
       SHOW_INFO_POPUP("No classes scheduled for today!");
       return;
     }
 
-    ctResponse = outputData.response.cTResponse;
-    classSubList = outputData.response.data;
+    ctResponse = finalResult.cTResponse;
+    classSubList = finalResult.data;
     populateClassDropdown();
   } else {
     SHOW_ERROR_POPUP(
@@ -596,7 +595,7 @@ async function openAttendanceWindow() {
   SHOW_SPECIFIC_DIV("pledgePopup");
 }
 
-async function goToStudentContainer() {
+function goToStudentContainer() {
   const data = {
     className: selectedClass,
     subjectName: selectedSubject,

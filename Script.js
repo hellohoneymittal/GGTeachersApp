@@ -657,34 +657,31 @@ async function callMarkAttendanceClick() {
     apiPayload["sendWhatsappFlag"] = 1;
     CALL_API_WITHOUT_LOADING(API_TYPE_CONSTANT.SAVE_ATTENDANCE, apiPayload);
     SHOW_SUCCESS_POPUP("Attendance marked successfully!", async () => {
-      teacherMarkTime = "";
-
       if (selectedClass.includes("Keshava") || japaFlag == 1) {
+        teacherMarkTime = "";
         homePageClick();
         return;
       }
 
       if (selectedSubject) {
-        const outputData1 = await CALL_API_READ(
+        const outputData1 = await CALL_API_CLOUDFLARE(
           API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
           selectedTeacher,
         );
 
-        if (outputData1?.status && outputData1.response) {
-          if (
-            typeof outputData1.response === "string" &&
-            outputData1.response.includes("ERR")
-          ) {
-            SHOW_ERROR_POPUP(outputData1.response.split("ERR: ")[1]);
+        if (outputData1?.status && outputData1.result) {
+          let finalResult = outputData1.result.response.result;
+          if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+            SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
             return;
           }
 
-          eligibleHWList = outputData1.response.data;
+          eligibleHWList = finalResult.data;
 
-          if (outputData1.response.infoMsg) {
+          if (finalResult.infoMsg) {
             console.log(
               "Information from Eligible Subject Function:\n\n" +
-                outputData1.response.infoMsg,
+                finalResult.infoMsg,
             );
           }
 
@@ -700,6 +697,7 @@ async function callMarkAttendanceClick() {
         }
       }
       //lessonPlanFlag == 1 ? showLPWindow(1) : showJapaWindow();
+      teacherMarkTime = "";
       showJapaWindow();
     });
   } else {
