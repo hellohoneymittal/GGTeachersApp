@@ -1,7 +1,7 @@
 //api constant
 
 const APPLICATION_URL =
-  "https://script.google.com/macros/s/AKfycbyRfb_4euEZT6bIfE7Ug-4nVa6-z4_oFRCZicujbBxR0haSRsJNeofyLv0Ezw2WPepNTA/exec";
+  "https://script.google.com/macros/s/AKfycbxIrEi99eWDGwto4qZBk6w-9or8J9-r5XYVVJFaCPVND-Ji9lrJobNTkORZ_awf4Tv9eg/exec";
 const BASE_URL_CLOUD_FLARE =
   "https://api-ggteachersapp.gaurangagurukul.workers.dev/";
 const IMAGE_CONSTANT = {
