@@ -579,7 +579,9 @@ async function openAttendanceWindow() {
     populateClassDropdown();
   } else {
     SHOW_ERROR_POPUP(
-      "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
+      outputData.result
+        ? `Error:\n\n${outputData.result}`
+        : "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
     );
     return;
   }
