@@ -170,13 +170,13 @@ async function openGenerateHomeworkWindow() {
   let now = new Date();
   let currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  if (currentMinutes > endMinutes) {
-    SHOW_INFO_POPUP("School Time over for Today! Cannot submit today's work!");
+  if (now.getDay() === 0) {
+    SHOW_INFO_POPUP("Cannot submit today's work on a Sunday!");
     return;
   }
 
-  if (now.getDay() === 0) {
-    SHOW_INFO_POPUP("Cannot submit today's work on a Sunday!");
+  if (currentMinutes > endMinutes) {
+    SHOW_INFO_POPUP("School Time over for Today! Cannot submit today's work!");
     return;
   }
 
