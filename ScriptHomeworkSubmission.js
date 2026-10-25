@@ -34,6 +34,10 @@ document
     selectedHwSubject = this.value.trim();
 
     if (selectedHwClass && selectedHwSubject) {
+      if (markAttendanceFlag == 1) {
+        selectedClass = selectedHwClass;
+        selectedSubject = selectedHwSubject;
+      }
       checkAllSelected("raiseHWContainer", "raiseHWNext");
     } else document.getElementById("raiseHWNext").disabled = true;
   });
@@ -151,6 +155,16 @@ function validateLPSelection(ct_sub) {
 
 async function openGenerateHomeworkWindow() {
   // let school_end_time = "13:15";
+  if (markAttendanceFlag == 1) {
+    SHOW_INFO_POPUP(
+      "Attendance Login Time: " +
+        teacherMarkTime.toLocaleString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+    );
+  }
   let [h, m] = school_end_time.split(":").map(Number);
   let endMinutes = h * 60 + m;
   let now = new Date();
@@ -170,12 +184,9 @@ async function openGenerateHomeworkWindow() {
   document.getElementById("raiseHWsubject").value = "";
   document.getElementById("raiseHWNext").disabled = true;
 
-  const outputData = await CALL_API_CLOUDFLARE(
-    API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
-    selectedTeacher,
-  );
-  if (outputData?.status && outputData.result) {
-    let finalResult = outputData.result.response.result;
+  const outputData = await CALL_API_CF("GET_TEACHER_HW_SUBJECTS", {});
+  if (outputData?.status && outputData.data) {
+    let finalResult = outputData.data;
     if (typeof finalResult === "string" && finalResult.includes("ERR")) {
       SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
       return;
@@ -203,7 +214,7 @@ async function openGenerateHomeworkWindow() {
     }
   } else {
     SHOW_ERROR_POPUP(
-      "Unable to fetch the class-subjects for teacher: " +
+      "Unable to fetch the class-subjects for filling today's work for teacher: " +
         selectedTeacher +
         "!!",
     );
@@ -251,19 +262,22 @@ function populateHWClassDropdown() {
   defaultSubject.textContent = "Select";
   hwsubjectDropdown.appendChild(defaultSubject);
 
-  for (const className in eligibleHWList) {
+  for (const className of Object.keys(school_end_time_map)) {
+    if (!(className in eligibleHWList)) continue;
     if (school_end_time_map[className] == null) continue;
-    let [h, m] = school_end_time_map[className].split(":").map(Number);
-    let endMinutes = h * 60 + m;
-    if (currentMinutes > endMinutes) {
+
+    const [h, m] = school_end_time_map[className].split(":").map(Number);
+    const endMinutes = h * 60 + m;
+
+    if (markAttendanceFlag == 0 && currentMinutes > endMinutes) {
       console.log(
-        "School Time over for Today for class: " +
-          className +
-          "! Cannot submit today's work!",
+        `School Time over for Today for class: ${className}! Cannot submit today's work!`,
       );
       continue;
     }
+
     ret_flag++;
+
     const option = document.createElement("option");
     option.value = className;
     option.textContent = className;
@@ -284,12 +298,14 @@ function populateHWSubjectDropdown() {
   hwsubjectDropdown.appendChild(defaultOption);
 
   if (eligibleHWList[selectedHwClass]) {
-    Object.keys(eligibleHWList[selectedHwClass]).forEach((subject) => {
-      const option = document.createElement("option");
-      option.value = subject;
-      option.textContent = subject;
-      hwsubjectDropdown.appendChild(option);
-    });
+    Object.keys(eligibleHWList[selectedHwClass])
+      .sort()
+      .forEach((subject) => {
+        const option = document.createElement("option");
+        option.value = subject;
+        option.textContent = subject;
+        hwsubjectDropdown.appendChild(option);
+      });
   }
 }
 
@@ -391,7 +407,6 @@ function submitLP(in_flag = 2) {
 
 async function sendTodaysWorkBackend() {
   console.log(selectedLessonPlan);
-  let japaSubButton = document.getElementById("japaSubmitButton");
   const outputData = await CALL_API(
     API_TYPE_CONSTANT.SUBMIT_TODAYS_WORK,
     selectedLessonPlan,
@@ -406,12 +421,53 @@ async function sendTodaysWorkBackend() {
     if (outputData.response == "ok")
       SHOW_SUCCESS_POPUP(
         "Today's work submitted Successfully!",
-        lessonPlanFlag == 0
+        markAttendanceFlag == 0
           ? homePageClick
-          : () => {
-              japaSubButton.innerHTML = "Submit Japa";
-              japaSubButton.onclick = saveGGJapaData;
-              SHOW_SPECIFIC_DIV("studentsJapaContainer");
+          : async () => {
+              const outputData = await CALL_API_CF("GET_CLASS_STUDENTS", {
+                className: selectedClass,
+                subjectName: selectedSubject,
+              });
+
+              if (outputData?.status && outputData.data) {
+                let finalResult = outputData.data;
+                if (
+                  typeof finalResult === "string" &&
+                  finalResult.includes("ERR")
+                ) {
+                  SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
+                  return;
+                }
+
+                ctResponse = finalResult.cTResponse;
+                classSubList = finalResult.data;
+                examNextDay = classSubList[selectedClass]["examNextDay"];
+
+                callStudentListLocal();
+                checkAllSelected("attendanceContainer", "attendanceNext");
+              } else {
+                SHOW_ERROR_POPUP(
+                  outputData.data
+                    ? `Error:\n\n${outputData.data}`
+                    : "Unable to fetch the subjects for marking attendance for teacher: " +
+                        selectedTeacher +
+                        "!!",
+                );
+                return;
+              }
+
+              //Resetting the next page
+
+              document.getElementById("nextBtn").disabled = true;
+
+              document.querySelectorAll('input[name="ques"]').forEach((el) => {
+                el.checked = false;
+              });
+
+              document.getElementById("nextBtn").onclick = () =>
+                goToStudentContainer();
+
+              SHOW_SPECIFIC_DIV("pledgePopup");
             },
       );
     else
@@ -431,16 +487,51 @@ async function sendTodaysWorkBackend() {
         selectedLessonPlan["subject"] +
         "!!",
     );
-
-  if (lessonPlanFlag == 0) return;
-  else {
-    japaSubButton.innerHTML = "Submit";
-    japaSubButton.onclick = saveGGJapaData;
-    SHOW_SPECIFIC_DIV("studentsJapaContainer");
-  }
 }
 
-function showLPWindow(back_disabled = 0) {
+async function showLPWindow(back_disabled = 0) {
+  const outputData = await CALL_API_CF("GET_TEACHER_HW_SUBJECTS", {
+    className: selectedHwClass,
+    subjectName: selectedHwSubject,
+  });
+
+  if (outputData?.status && outputData.data) {
+    let finalResult = outputData.data;
+    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
+      return;
+    }
+
+    eligibleHWList = finalResult.data;
+
+    if (finalResult.infoMsg) {
+      console.log(
+        "Information from Eligible Subject Function:\n\n" + finalResult.infoMsg,
+      );
+    }
+
+    if (Object.keys(eligibleHWList).length == 0) {
+      let infoPopupMsg =
+        (markAttendanceFlag == 1
+          ? "Cannot mark Attendance as\n\n"
+          : "Cannot submit today's work as\n\n") +
+        (finalResult.infoMsg != ""
+          ? finalResult.infoMsg
+          : "No class-subjects available for raising Practice Work/Class Test Syllabus today!");
+      SHOW_INFO_POPUP(infoPopupMsg);
+      homePageClick();
+      return;
+    } else {
+    }
+  } else {
+    SHOW_ERROR_POPUP(
+      "Unable to fetch the class-subjects for filling today's work for teacher: " +
+        selectedTeacher +
+        "!!",
+    );
+    return;
+  }
+
   const examDetailDiv = document.getElementById("selectLPHeading_div");
   const examDetailLabel = document.getElementById("selectLPHeading_lbl");
   const dynamic_option_element = document.getElementById("dynamic-lp-list");

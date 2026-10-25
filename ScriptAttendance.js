@@ -370,7 +370,6 @@ function populateSubjectDropdown(selectedClass) {
 
 function showJapaWindow() {
   let japaSubButton = document.getElementById("japaSubmitButton");
-  let popup_cnt = 0;
 
   japaSubButton.disabled = true;
 
@@ -439,10 +438,6 @@ function showJapaWindow() {
 
     // --- START/PAUSE/RESUME ---
     startBtn.addEventListener("click", () => {
-      if (popup_cnt == 0 && lessonPlanFlag == 1) {
-        showLPWindow(1);
-        popup_cnt = 1;
-      }
       japaSubButton.disabled = false;
       if (!timerIntervalGG) {
         startTime = Date.now();
@@ -548,53 +543,8 @@ async function openAttendanceWindow() {
 
   teacherMarkTime = teacherMarkTime || now;
 
-  SHOW_INFO_POPUP(
-    "Attendance Login Time: " +
-      teacherMarkTime.toLocaleString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
-  );
-
-  const outputData = await CALL_API_CLOUDFLARE(
-    "GET_TODAY_CLASS_DETAILS_FOR_TEACHER",
-    selectedTeacher,
-  );
-
-  if (outputData?.status && outputData.result) {
-    let finalResult = outputData.result.response.result;
-    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
-      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
-      return;
-    }
-
-    if (Object.keys(finalResult.data).length == 0) {
-      SHOW_INFO_POPUP("No classes scheduled for today!");
-      return;
-    }
-
-    ctResponse = finalResult.cTResponse;
-    classSubList = finalResult.data;
-    populateClassDropdown();
-  } else {
-    SHOW_ERROR_POPUP(
-      outputData.result
-        ? `Error:\n\n${outputData.result}`
-        : "Unable to fetch the subjects for teacher: " + selectedTeacher + "!!",
-    );
-    return;
-  }
-
-  //Resetting the next page
-
-  document.getElementById("nextBtn").disabled = true;
-
-  document.querySelectorAll('input[name="ques"]').forEach((el) => {
-    el.checked = false;
-  });
-
-  SHOW_SPECIFIC_DIV("pledgePopup");
+  markAttendanceFlag = 1;
+  openGenerateHomeworkWindow();
 }
 
 function goToStudentContainer() {
