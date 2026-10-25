@@ -228,6 +228,10 @@ function populateHWClassDropdown() {
   let school_end_time_1 = "13:20";
   let school_end_time_2 = "14:35";
   let school_end_time_map = {
+    "Sri Keshava Level 1": school_end_time_1,
+    "Sri Keshava Level 2": school_end_time_1,
+    "Sri Keshava Level 3": school_end_time_1,
+    "Sri Keshava Level 4": school_end_time_1,
     "Sri Narayana": school_end_time_1,
     "Sri Madhava": school_end_time_1,
     "Sri Govinda": school_end_time_1,
@@ -489,133 +493,173 @@ async function sendTodaysWorkBackend() {
     );
 }
 
-async function showLPWindow(back_disabled = 0) {
-  const outputData = await CALL_API_CF("GET_TEACHER_HW_SUBJECTS", {
-    className: selectedHwClass,
-    subjectName: selectedHwSubject,
-  });
+async function showLPWindow() {
+  if (selectedClass.includes("Keshava")) {
+    const outputData = await CALL_API_CF("GET_CLASS_STUDENTS", {
+      className: selectedClass,
+      subjectName: selectedSubject,
+    });
 
-  if (outputData?.status && outputData.data) {
-    let finalResult = outputData.data;
-    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
-      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
-      return;
-    }
+    if (outputData?.status && outputData.data) {
+      let finalResult = outputData.data;
+      if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+        SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
+        return;
+      }
 
-    eligibleHWList = finalResult.data;
+      ctResponse = finalResult.cTResponse;
+      classSubList = finalResult.data;
+      examNextDay = classSubList[selectedClass]["examNextDay"];
 
-    if (finalResult.infoMsg) {
-      console.log(
-        "Information from Eligible Subject Function:\n\n" + finalResult.infoMsg,
-      );
-    }
-
-    if (Object.keys(eligibleHWList).length == 0) {
-      let infoPopupMsg =
-        (markAttendanceFlag == 1
-          ? "Cannot mark Attendance as\n\n"
-          : "Cannot submit today's work as\n\n") +
-        (finalResult.infoMsg != ""
-          ? finalResult.infoMsg
-          : "No class-subjects available for raising Practice Work/Class Test Syllabus today!");
-      SHOW_INFO_POPUP(infoPopupMsg);
-      homePageClick();
-      return;
+      callStudentListLocal();
+      checkAllSelected("attendanceContainer", "attendanceNext");
     } else {
+      SHOW_ERROR_POPUP(
+        outputData.data
+          ? `Error:\n\n${outputData.data}`
+          : "Unable to fetch the subjects for marking attendance for teacher: " +
+              selectedTeacher +
+              "!!",
+      );
+      return;
     }
+
+    //Resetting the next page
+
+    document.getElementById("nextBtn").disabled = true;
+
+    document.querySelectorAll('input[name="ques"]').forEach((el) => {
+      el.checked = false;
+    });
+
+    document.getElementById("nextBtn").onclick = () => goToStudentContainer();
+
+    SHOW_SPECIFIC_DIV("pledgePopup");
   } else {
-    SHOW_ERROR_POPUP(
-      "Unable to fetch the class-subjects for filling today's work for teacher: " +
-        selectedTeacher +
-        "!!",
+    const outputData = await CALL_API_CF("GET_TEACHER_HW_SUBJECTS", {
+      className: selectedHwClass,
+      subjectName: selectedHwSubject,
+    });
+
+    if (outputData?.status && outputData.data) {
+      let finalResult = outputData.data;
+      if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+        SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
+        return;
+      }
+
+      eligibleHWList = finalResult.data;
+
+      if (finalResult.infoMsg) {
+        console.log(
+          "Information from Eligible Subject Function:\n\n" +
+            finalResult.infoMsg,
+        );
+      }
+
+      if (Object.keys(eligibleHWList).length == 0) {
+        let infoPopupMsg =
+          (markAttendanceFlag == 1
+            ? "Cannot mark Attendance as\n\n"
+            : "Cannot submit today's work as\n\n") +
+          (finalResult.infoMsg != ""
+            ? finalResult.infoMsg
+            : "No class-subjects available for raising Practice Work/Class Test Syllabus today!");
+        SHOW_INFO_POPUP(infoPopupMsg);
+        homePageClick();
+        return;
+      }
+    } else {
+      SHOW_ERROR_POPUP(
+        "Unable to fetch the class-subjects for filling today's work for teacher: " +
+          selectedTeacher +
+          "!!",
+      );
+      return;
+    }
+    const examDetailDiv = document.getElementById("selectLPHeading_div");
+    const examDetailLabel = document.getElementById("selectLPHeading_lbl");
+    const dynamic_option_element = document.getElementById("dynamic-lp-list");
+    let ct_sub = Number(
+      eligibleHWList[selectedHwClass][selectedHwSubject]["ct"],
     );
-    return;
-  }
+    let comment_needed = Number(
+      eligibleHWList[selectedHwClass][selectedHwSubject]["comment"],
+    );
+    let custom_input_label =
+      eligibleHWList[selectedHwClass][selectedHwSubject]["custom_label"];
+    let book_question_enabled =
+      Object.keys(
+        eligibleHWList[selectedHwClass][selectedHwSubject]["question_map"],
+      ).length > 0;
+    let i;
+    let next_button = document.getElementById("nextButtonLP");
+    let back_button = document.getElementById("backButtonLP");
 
-  const examDetailDiv = document.getElementById("selectLPHeading_div");
-  const examDetailLabel = document.getElementById("selectLPHeading_lbl");
-  const dynamic_option_element = document.getElementById("dynamic-lp-list");
-  let ct_sub = Number(eligibleHWList[selectedHwClass][selectedHwSubject]["ct"]);
-  let comment_needed = Number(
-    eligibleHWList[selectedHwClass][selectedHwSubject]["comment"],
-  );
-  let custom_input_label =
-    eligibleHWList[selectedHwClass][selectedHwSubject]["custom_label"];
-  let book_question_enabled =
-    Object.keys(
-      eligibleHWList[selectedHwClass][selectedHwSubject]["question_map"],
-    ).length > 0;
-  let i;
-  let next_button = document.getElementById("nextButtonLP");
-  let back_button = document.getElementById("backButtonLP");
+    next_button.disabled = true;
+    next_button.innerHTML = "Submit";
+    examDetailDiv.style.display = "block";
+    examDetailLabel.innerHTML = `${selectedHwClass} : ${selectedHwSubject}`;
+    dynamic_option_element.innerHTML = "";
 
-  if (back_disabled == 1) back_button.disabled = true;
+    let options_to_be_published = lp_option_map[ct_sub || comment_needed];
 
-  next_button.disabled = true;
-  next_button.innerHTML = "Submit";
-  examDetailDiv.style.display = "block";
-  examDetailLabel.innerHTML = `${selectedHwClass} : ${selectedHwSubject}`;
-  dynamic_option_element.innerHTML = "";
+    //Generate dynamic values for lesson plan
 
-  let options_to_be_published = lp_option_map[ct_sub || comment_needed];
+    for (i in options_to_be_published) {
+      let option_element = document.createElement("div");
+      option_element.className = "options";
 
-  //Generate dynamic values for lesson plan
+      let input_element = document.createElement("input");
+      input_element.className = "custom-checkbox";
+      input_element.name = "worktype";
+      input_element.type = "radio";
+      input_element.value = options_to_be_published[i];
+      input_element.id = i;
 
-  for (i in options_to_be_published) {
-    let option_element = document.createElement("div");
-    option_element.className = "options";
+      option_element.appendChild(input_element);
 
-    let input_element = document.createElement("input");
-    input_element.className = "custom-checkbox";
-    input_element.name = "worktype";
-    input_element.type = "radio";
-    input_element.value = options_to_be_published[i];
-    input_element.id = i;
+      let label_element = document.createElement("label");
+      label_element.className = "custom-label-radio-content-custom-box";
+      label_element.innerHTML = options_to_be_published[i];
 
-    option_element.appendChild(input_element);
+      option_element.appendChild(label_element);
 
-    let label_element = document.createElement("label");
-    label_element.className = "custom-label-radio-content-custom-box";
-    label_element.innerHTML = options_to_be_published[i];
+      dynamic_option_element.appendChild(option_element);
 
-    option_element.appendChild(label_element);
+      if (i == "book_questions") {
+        input_element.disabled = !book_question_enabled;
+        if (!book_question_enabled) {
+          label_element.classList.add("disabled-label");
+        } else {
+          label_element.classList.remove("disabled-label");
+        }
+      }
 
-    dynamic_option_element.appendChild(option_element);
+      if (i == "custom_input") {
+        label_element.innerHTML = custom_input_label;
+        input_element.value = custom_input_label;
 
-    if (i == "book_questions") {
-      input_element.disabled = !book_question_enabled;
-      if (!book_question_enabled) {
-        label_element.classList.add("disabled-label");
-      } else {
-        label_element.classList.remove("disabled-label");
+        let text_element = document.createElement("textarea");
+        text_element.required = true;
+        text_element.placeholder = "Only Class Work to be entered!";
+        text_element.style.display = "none";
+        text_element.value = "";
+        text_element.id = "custom_comment_text";
+
+        dynamic_option_element.appendChild(text_element);
+
+        let err_element = document.createElement("div");
+        err_element.className = "error";
+        err_element.id = "Errcustom_comment_text";
+        err_element.style.display = "none";
+
+        dynamic_option_element.appendChild(err_element);
       }
     }
 
-    if (i == "custom_input") {
-      label_element.innerHTML = custom_input_label;
-      input_element.value = custom_input_label;
-
-      let text_element = document.createElement("textarea");
-      text_element.required = true;
-      text_element.placeholder = "Only Class Work to be entered!";
-      text_element.style.display = "none";
-      text_element.value = "";
-      text_element.id = "custom_comment_text";
-
-      dynamic_option_element.appendChild(text_element);
-
-      let err_element = document.createElement("div");
-      err_element.className = "error";
-      err_element.id = "Errcustom_comment_text";
-      err_element.style.display = "none";
-
-      dynamic_option_element.appendChild(err_element);
-    }
+    SHOW_SPECIFIC_DIV("selectLPContainer");
   }
-
-  if (back_disabled == 1)
-    SHOW_INFO_POPUP("Japa STARTED!\n\nPlease fill Today's Work!");
-  SHOW_SPECIFIC_DIV("selectLPContainer");
 }
 
 function createMainAccordion(inputId) {
