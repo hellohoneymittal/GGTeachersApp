@@ -26,7 +26,7 @@ let japaData = "";
 let inputPassword = "";
 let inputMarksDetails = {};
 let timetable_input_map = {};
-let lessonPlanFlag = 0;
+let markAttendanceFlag = 0;
 
 document.querySelectorAll(".accordion-header").forEach((header) => {
   header.addEventListener("click", () => {
@@ -602,6 +602,7 @@ function startAllTimers() {
   }
 
   document.getElementById("japaSubmitButton").disabled = false;
+  markAttendanceFlag = 0;
 }
 
 function getSelectedStudents(name) {
@@ -663,40 +664,6 @@ async function callMarkAttendanceClick() {
         return;
       }
 
-      if (selectedSubject) {
-        const outputData1 = await CALL_API_CLOUDFLARE(
-          API_TYPE_CONSTANT.GET_TEACHER_ELIGIBLE_SUBJECTS,
-          selectedTeacher,
-        );
-
-        if (outputData1?.status && outputData1.result) {
-          let finalResult = outputData1.result.response.result;
-          if (typeof finalResult === "string" && finalResult.includes("ERR")) {
-            SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
-            return;
-          }
-
-          eligibleHWList = finalResult.data;
-
-          if (finalResult.infoMsg) {
-            console.log(
-              "Information from Eligible Subject Function:\n\n" +
-                finalResult.infoMsg,
-            );
-          }
-
-          if (
-            Object.keys(eligibleHWList).length > 0 &&
-            eligibleHWList[selectedClass] &&
-            eligibleHWList[selectedClass][selectedSubject]
-          ) {
-            lessonPlanFlag = 1;
-            selectedHwClass = selectedClass;
-            selectedHwSubject = selectedSubject;
-          }
-        }
-      }
-      //lessonPlanFlag == 1 ? showLPWindow(1) : showJapaWindow();
       teacherMarkTime = "";
       showJapaWindow();
     });
@@ -720,15 +687,6 @@ function markAttendanceforJapaClick() {
 
 function populateJapaResultDataView(data) {
   const container = document.getElementById("classDataContainer");
-  const japaNextButton = document.getElementById("japaNext");
-
-  // if (lessonPlanFlag == 0) {
-  //   japaNextButton.innerHTML = "Home";
-  //   japaNextButton.addEventListener("click", homePageClick);
-  // } else {
-  //   japaNextButton.innerHTML = "Fill Today's Work";
-  //   japaNextButton.addEventListener("click", () => showLPWindow(1));
-  // }
 
   // Group by className (optional — in case you later get multiple classes)
   const grouped = {};
@@ -829,13 +787,25 @@ function downloadJapaReportClick() {
 function setUserNameOnFrontScreen(devName) {
   const loginUserDiv = document.getElementById("login-user-name-div_fp");
   const loginUserLabel = document.getElementById("login-user-name-lbl_fp");
+  const loginUserDiv1 = document.getElementById("login-user-name-div_fp1");
+  const loginUserLabel1 = document.getElementById("login-user-name-lbl_fp1");
+  const loginUserDiv2 = document.getElementById("login-user-name-div_fp2");
+  const loginUserLabel2 = document.getElementById("login-user-name-lbl_fp2");
 
   if (devName) {
     loginUserDiv.style.display = "block";
     loginUserLabel.innerHTML = `<strong>${devName}</strong>`;
+    loginUserDiv1.style.display = "block";
+    loginUserLabel1.innerHTML = `<strong>${devName}</strong>`;
+    loginUserDiv2.style.display = "block";
+    loginUserLabel2.innerHTML = `<strong>${devName}</strong>`;
   } else {
     loginUserDiv.style.display = "none";
     loginUserLabel.innerHTML = `<strong>${devName}</strong>`;
+    loginUserDiv1.style.display = "none";
+    loginUserLabel1.innerHTML = `<strong>${devName}</strong>`;
+    loginUserDiv2.style.display = "none";
+    loginUserLabel2.innerHTML = `<strong>${devName}</strong>`;
   }
 }
 
@@ -922,28 +892,25 @@ function resetFormGenData(moveAway = 0) {
 }
 
 async function openTimeTableWindow() {
-  const outputData = await CALL_API_READ(
-    API_TYPE_CONSTANT.GET_TEACHER_TIMETABLE,
-    selectedTeacher,
-  );
-  if (outputData?.status && outputData.response) {
-    if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
-    ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+  const outputData = await CALL_API_CF("GET_TEACHER_TIMETABLE", {
+    teacherName: selectedTeacher,
+  });
+  if (outputData?.status && outputData.data) {
+    let finalResult = outputData.data;
+    if (typeof finalResult === "string" && finalResult.includes("ERR")) {
+      SHOW_ERROR_POPUP(finalResult.split("ERR: ")[1]);
       return;
     }
 
-    if (Object.keys(outputData.response.data).length == 0) {
+    if (Object.keys(finalResult.data).length == 0) {
       SHOW_INFO_POPUP("No classes scheduled for you!");
       return;
     }
 
     openVerifyDetailsWindow(
-      outputData.response.header,
+      finalResult.header,
       [`Timetable for: ${selectedTeacher}`],
-      outputData.response.data,
+      finalResult.data,
       homePageClick,
       "",
       "",
@@ -1170,24 +1137,21 @@ document
   .addEventListener("change", loadTimetableSchedule);
 
 async function openTimetableWindow() {
-  const outputData = await CALL_API_READ(
-    API_TYPE_CONSTANT.GET_ALL_TIMETABLE,
-    {},
-  );
-  if (outputData?.status && outputData.response) {
-    if (typeof outputData.response === "string") {
-      if (outputData.response.includes("ERR"))
-        SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
-      else SHOW_INFO_POPUP(outputData.response);
+  const outputData = await CALL_API_CF("GET_ALL_CLASS_TIMETABLE", {});
+  if (outputData?.status && outputData.data) {
+    if (typeof outputData.data === "string") {
+      if (outputData.data.includes("ERR"))
+        SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
+      else SHOW_INFO_POPUP(outputData.data);
       return;
     }
 
-    if (Object.keys(outputData.response.output).length == 0) {
+    if (Object.keys(outputData.data.output).length == 0) {
       SHOW_INFO_POPUP("No timetable found!");
       return;
     }
 
-    console.log(outputData.response);
+    console.log(outputData.data);
 
     const parent_popup = document.getElementById("timetableGridPopup");
     const popup = document.getElementById("timetableGridSubPopup");
@@ -1209,7 +1173,7 @@ async function openTimetableWindow() {
       current = next;
     }
 
-    timetable_input_map = outputData.response;
+    timetable_input_map = outputData.data;
 
     // Show the parent popup
     SHOW_SPECIFIC_DIV(parent_popup.id);

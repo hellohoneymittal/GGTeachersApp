@@ -2,8 +2,8 @@
 
 const APPLICATION_URL =
   "https://script.google.com/macros/s/AKfycbxIrEi99eWDGwto4qZBk6w-9or8J9-r5XYVVJFaCPVND-Ji9lrJobNTkORZ_awf4Tv9eg/exec";
-const BASE_URL_CLOUD_FLARE =
-  "https://api-ggteachersapp.gaurangagurukul.workers.dev/";
+const BASE_URL_CLOUD_FLARE = "https://api-ggapps.gaurangagurukul.workers.dev/";
+const APP_NAME = "TeachersApp";
 const IMAGE_CONSTANT = {
   clickHere: "https://i.postimg.cc/g0LSdBpL/Click-Here.jpg",
   addUserIcon: "https://imghost.net/ib/E5PegaLvH4xfUED_1729512954.png",

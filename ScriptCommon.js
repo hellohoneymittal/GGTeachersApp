@@ -2336,26 +2336,33 @@ function PARSE_IST_DATE(dateString) {
   return null; //  unsupported format
 }
 
-async function CALL_API_CLOUDFLARE(apiType, data, timeout = 50000) {
+async function CALL_API_CF(apiType, data, timeout = 50000, showLoading = true) {
   const onlineRes = await IS_ONLINE();
 
   if (!onlineRes) {
     return null;
   }
 
+  const updatedData = {
+    ...data,
+    appName: APP_NAME,
+  };
+
   const request = {
     apiType: apiType,
-    inputData: data,
+    inputData: updatedData,
   };
 
   const apiName = apiType.toLowerCase();
-
   const url = `${BASE_URL_CLOUD_FLARE}${apiName}`;
+
   try {
-    IsLoading(true);
+    if (showLoading) {
+      IsLoading(true);
+    }
 
     const response = await axios.post(url, request, {
-      timeout: timeout,
+      timeout,
       headers: {
         "Content-Type": "application/json",
       },
@@ -2372,7 +2379,7 @@ async function CALL_API_CLOUDFLARE(apiType, data, timeout = 50000) {
 
     console.error("Unexpected API response:", result);
 
-    SHOW_ERROR_POPUP("Something went wrong, please contact Gurukul Servants.");
+    SHOW_ERROR_POPUP("Something went wrong, please contact any NKD Servants.");
 
     return null;
   } catch (error) {
@@ -2391,6 +2398,68 @@ async function CALL_API_CLOUDFLARE(apiType, data, timeout = 50000) {
 
     return null;
   } finally {
-    IsLoading(false);
+    if (showLoading) {
+      IsLoading(false);
+    }
   }
+}
+
+async function CALL_API_CF_WITHOUT_LOADING(apiType, data, timeout = 70000) {
+  return CALL_API_CF(apiType, data, timeout, false);
+}
+
+async function CALL_API_CF_WITH_CACHE(
+  apiType,
+  inputData = {},
+  cacheHours = null,
+  forceRefresh = false,
+) {
+  if (!forceRefresh) {
+    const cachedResponse = await DB_GET(
+      apiType,
+      INDEX_DB.dbName,
+      INDEX_DB.storeName,
+    );
+
+    if (cachedResponse) {
+      console.log(`Cache Hit : ${apiType}`);
+      return cachedResponse;
+    }
+  }
+
+  console.log(`Cache Miss : ${apiType}`);
+
+  const response = await CALL_API_CF(apiType, inputData);
+
+  if (response) {
+    await DB_SET(
+      apiType,
+      response,
+      INDEX_DB.dbName,
+      INDEX_DB.storeName,
+      cacheHours,
+    );
+  }
+
+  return response;
+}
+
+async function CALL_API_WRITE_CF(apiType, inputData = {}, timeout = 50000) {
+  if (!currentCloudflareWriteRequestId) {
+    currentCloudflareWriteRequestId = GENERATE_IDEMPOTENCY_KEY();
+  }
+
+  const writeData = {
+    ...inputData,
+    idempotencyKey: currentCloudflareWriteRequestId,
+  };
+
+  const response = await CALL_API_CF(apiType, writeData, timeout);
+
+  // Clear the key only after confirmed success.
+  if (response?.status === true || response?.status === "success") {
+    currentCloudflareWriteRequestId = null;
+  }
+
+  return response;
 }
