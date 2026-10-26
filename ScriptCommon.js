@@ -2444,6 +2444,12 @@ async function CALL_API_CF_WITH_CACHE(
   return response;
 }
 
+let currentCloudflareWriteRequestId = null;
+
+function GENERATE_IDEMPOTENCY_KEY() {
+  return crypto.randomUUID();
+}
+
 async function CALL_API_WRITE_CF(apiType, inputData = {}, timeout = 50000) {
   if (!currentCloudflareWriteRequestId) {
     currentCloudflareWriteRequestId = GENERATE_IDEMPOTENCY_KEY();

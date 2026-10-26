@@ -485,8 +485,8 @@ async function saveGGJapaData() {
   japaData = inputData;
 
   console.log("Request to save Japa data:", inputData);
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SAVE_GG_STUDENT_JAPA_DATA,
+  const outputData = await CALL_API_WRITE_CF(
+    "SAVE_GG_STUDENT_JAPA_DATA",
     inputData,
   );
   if (outputData?.status) {
@@ -649,14 +649,11 @@ async function callMarkAttendanceClick() {
     markTime: teacherMarkTime,
   };
 
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SAVE_ATTENDANCE,
-    apiPayload,
-  );
+  const outputData = await CALL_API_WRITE_CF("SAVE_ATTENDANCE", apiPayload);
 
   if (outputData?.status) {
     apiPayload["sendWhatsappFlag"] = 1;
-    CALL_API_WITHOUT_LOADING(API_TYPE_CONSTANT.SAVE_ATTENDANCE, apiPayload);
+    CALL_API_CF_WITHOUT_LOADING("SAVE_ATTENDANCE", apiPayload);
     SHOW_SUCCESS_POPUP("Attendance marked successfully!", async () => {
       if (selectedClass.includes("Keshava") || japaFlag == 1) {
         teacherMarkTime = "";
