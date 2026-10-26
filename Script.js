@@ -287,20 +287,20 @@ async function openExamsWindow() {
   document.getElementById("examsubject").value = "";
   document.getElementById("pendingexam").value = "";
 
-  const outputData = await CALL_API_READ(
-    API_TYPE_CONSTANT.GET_TEACHER_PENDING_EXAMS,
-    selectedTeacher,
+  const outputData = await CALL_API_CF(
+    "GET_TEACHER_PENDING_EXAMS",
+    {teacherName : selectedTeacher},
   );
-  if (outputData?.status && outputData.response) {
+  if (outputData?.status && outputData.data) {
     if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
+      typeof outputData.data === "string" &&
+      outputData.data.includes("ERR")
     ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+      SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
       return;
     }
 
-    pendingExamList = outputData.response.data;
+    pendingExamList = outputData.data.data;
     if (Object.keys(pendingExamList).length == 0) {
       SHOW_INFO_POPUP("No Pending Examinations!");
       homePageClick();

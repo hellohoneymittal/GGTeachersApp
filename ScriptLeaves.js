@@ -450,8 +450,8 @@ function moveNextStep() {
 }
 
 async function submitLeaves() {
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SUBMIT_TEACHER_LEAVES,
+  const outputData = await CALL_API_WRITE_CF(
+    "SUBMIT_TEACHER_LEAVES",
     leaveData,
   );
 
