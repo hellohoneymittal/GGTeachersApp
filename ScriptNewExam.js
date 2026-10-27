@@ -1112,27 +1112,27 @@ async function submitExamMarks() {
   });
 
   console.log(inputMarksDetails);
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SUBMIT_EXAM_MARKS,
+  const outputData = await CALL_API_WRITE_CF(
+    "SUBMIT_EXAM_MARKS",
     inputMarksDetails,
   );
 
   if (
     outputData?.status &&
-    outputData.response &&
-    typeof outputData.response === "string"
+    outputData.data &&
+    typeof outputData.data === "string"
   ) {
-    console.log(outputData.response);
-    if (outputData.response == "ok")
+    console.log(outputData.data);
+    if (outputData.data == "ok")
       SHOW_SUCCESS_POPUP("Marks submitted Successfully!", homePageClick);
-    else if (outputData.response == "okct")
+    else if (outputData.data == "okct")
       SHOW_SUCCESS_POPUP("Marks submitted Successfully!", homePageClick);
     else
       SHOW_ERROR_POPUP(
         "Unable to submit marks for: " +
           selectedExamDetails["examName"] +
           "!!\n\n" +
-          outputData.response.split("ERR: ")[1],
+          outputData.data.split("ERR: ")[1],
       );
   } else
     SHOW_ERROR_POPUP(

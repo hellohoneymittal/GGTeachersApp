@@ -457,11 +457,11 @@ async function submitLeaves() {
 
   if (
     outputData?.status &&
-    outputData.response &&
-    typeof outputData.response === "string"
+    outputData.data &&
+    typeof outputData.data === "string"
   ) {
-    console.log(outputData.response);
-    if (outputData.response == "ok") {
+    console.log(outputData.data);
+    if (outputData.data == "ok") {
       checkLeavesAndSendWhatsapp();
       SHOW_SUCCESS_POPUP(
         "Leaves submitted Successfully for " + selectedTeacher + "!",
@@ -474,7 +474,7 @@ async function submitLeaves() {
         "Unable to submit leaves for: " +
           selectedTeacher +
           "!!\n\n" +
-          outputData.response.split("ERR: ")[1],
+          outputData.data.split("ERR: ")[1],
       );
   } else
     SHOW_ERROR_POPUP("Unable to submit leaves for: " + selectedTeacher + "!!");

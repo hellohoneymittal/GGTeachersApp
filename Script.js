@@ -287,10 +287,9 @@ async function openExamsWindow() {
   document.getElementById("examsubject").value = "";
   document.getElementById("pendingexam").value = "";
 
-  const outputData = await CALL_API_CF(
-    "GET_TEACHER_PENDING_EXAMS",
-    {teacherName : selectedTeacher},
-  );
+  const outputData = await CALL_API_CF("GET_TEACHER_PENDING_EXAMS", {
+    teacherName: selectedTeacher,
+  });
   if (outputData?.status && outputData.data) {
     if (
       typeof outputData.data === "string" &&
@@ -665,8 +664,8 @@ async function callMarkAttendanceClick() {
       showJapaWindow();
     });
   } else {
-    SHOW_ERROR_POPUP("ERROR in marking attendance!\n\n" + outputData.response);
-    console.log(outputData.response);
+    SHOW_ERROR_POPUP("ERROR in marking attendance!\n\n" + outputData.data);
+    console.log(outputData.data);
   }
 }
 
