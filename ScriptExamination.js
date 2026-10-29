@@ -82,8 +82,7 @@ sessionSelect.addEventListener("change", function () {
 });
 
 async function openComputerExamWindow() {
-  let i, j;
-  const outputData = await CALL_API_READ("GET_COMPUTER_EXAMS", {
+  const outputData = await CALL_API_CF("GET_COMPUTER_EXAMS", {
     teacherName: selectedTeacher,
   });
 
@@ -143,21 +142,21 @@ document
   .addEventListener("change", loadExamSchedule);
 
 async function openDateSheetWindow() {
-  const outputData = await CALL_API_READ(API_TYPE_CONSTANT.GET_DATESHEET, {});
-  if (outputData?.status && outputData.response) {
-    if (typeof outputData.response === "string") {
-      if (outputData.response.includes("ERR"))
-        SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
-      else SHOW_INFO_POPUP(outputData.response);
+  const outputData = await CALL_API_CF("GET_DATESHEET", {});
+  if (outputData?.status && outputData.data) {
+    if (typeof outputData.data === "string") {
+      if (outputData.data.includes("ERR"))
+        SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
+      else SHOW_INFO_POPUP(outputData.data);
       return;
     }
 
-    if (Object.keys(outputData.response.output).length == 0) {
+    if (Object.keys(outputData.data.output).length == 0) {
       SHOW_INFO_POPUP("No exams scheduled!");
       return;
     }
 
-    console.log(outputData.response);
+    console.log(outputData.data);
 
     const parent_popup = document.getElementById("examScheduleGridPopup");
     const popup = document.getElementById("examScheduleGridSubPopup");
@@ -179,7 +178,7 @@ async function openDateSheetWindow() {
       current = next;
     }
 
-    datesheet_input_map = outputData.response;
+    datesheet_input_map = outputData.data;
 
     // Show the parent popup
     SHOW_SPECIFIC_DIV(parent_popup.id);
