@@ -1235,70 +1235,125 @@ function populateActionGrid(
   columnNames,
   gridData,
   instance = 0,
+  rowOrder = null,
 ) {
   const gridContainer = document.getElementById(
     inputType + "GridContainer_" + instance,
   );
+
   const statusTextElement = document.getElementById(
     inputType + "GridStatusText_" + instance,
   );
+
   let totalRows = 0;
 
-  // Clear any existing content in the grid container
   statusTextElement.textContent = inputMsg;
 
-  // Create the table element and headers dynamically
-  let table = document.getElementById(inputType + "GridTable_" + instance);
+  const table = document.getElementById(inputType + "GridTable_" + instance);
 
   const thead = document.getElementById(`${inputType}GridTHead_${instance}`);
+
   thead.replaceChildren();
 
   const headerRow = document.createElement("tr");
   headerRow.id = `${inputType}GridTHRow_${instance}`;
 
-  // Add table headers dynamically from columnNames array
   columnNames.forEach((column) => {
     const th = document.createElement("th");
-    th.textContent = column; // Use displayName for the header
+    th.textContent = column;
     th.style.textAlign = "center";
     headerRow.appendChild(th);
   });
+
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
   const tbody = document.getElementById(`${inputType}GridTBody_${instance}`);
+
   tbody.replaceChildren();
 
-  console.info(gridData);
+  // Convert gridData into an array so it can be sorted
+  const entries = Object.entries(gridData);
 
-  // Populate table rows dynamically from gridData
-  for (let key in gridData) {
+  // Convert dd/MM/yyyy to yyyy/MM/dd for chronological sorting
+  function normalizeSortValue(value) {
+    if (value == null) return "";
+
+    const text = String(value).trim();
+
+    const dateMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+    if (dateMatch) {
+      const [, day, month, year] = dateMatch;
+
+      return `${year}/${month.padStart(2, "0")}/${day.padStart(2, "0")}`;
+    }
+
+    return text;
+  }
+
+  // Custom key order takes priority when specified
+  if (Array.isArray(rowOrder) && rowOrder.length > 0) {
+    const orderMap = new Map(
+      rowOrder.map((key, index) => [String(key), index]),
+    );
+
+    entries.sort((a, b) => {
+      const indexA = orderMap.has(String(a[0]))
+        ? orderMap.get(String(a[0]))
+        : Infinity;
+
+      const indexB = orderMap.has(String(b[0]))
+        ? orderMap.get(String(b[0]))
+        : Infinity;
+
+      return indexA - indexB;
+    });
+  } else {
+    // Otherwise, sort ascending by the first column
+    const sortColumn = columnNames[0];
+
+    entries.sort((a, b) => {
+      const valueA = normalizeSortValue(a[1][sortColumn]);
+      const valueB = normalizeSortValue(b[1][sortColumn]);
+
+      return valueA.localeCompare(valueB, undefined, {
+        sensitivity: "base",
+        numeric: true,
+      });
+    });
+  }
+
+  // Populate table rows
+  for (const [key, data] of entries) {
     const row = document.createElement("tr");
-    let spiritualFlag = gridData[key]["Spiritual Mentor's Name"] == "" ? 0 : 1;
-    row.id = `${inputType}GridTRow_${instance}_${totalRows}`;
-    row.dataset.name = `TableRow_${gridData[key]["row"]}_${gridData[key]["Student Name"]}_${spiritualFlag}_${key}`;
 
-    if (gridData[key]["red"] != null && gridData[key]["red"] == 1) {
+    const spiritualFlag = data["Spiritual Mentor's Name"] == "" ? 0 : 1;
+
+    row.id = `${inputType}GridTRow_${instance}_${totalRows}`;
+
+    row.dataset.name = `TableRow_${data["row"]}_${data["Student Name"]}_${spiritualFlag}_${key}`;
+
+    if (data["red"] != null && data["red"] == 1) {
       row.style.backgroundColor = "#b81414";
       row.style.color = "white";
     }
 
-    // Add each data field into a new table cell (td)
     columnNames.forEach((column) => {
-      if (gridData[key][column] == null) return;
+      if (data[column] == null) return;
+
       const td = document.createElement("td");
-      td.textContent = gridData[key][column];
+      td.textContent = data[column];
       row.appendChild(td);
     });
 
     totalRows++;
-
     tbody.appendChild(row);
   }
-  table.appendChild(tbody);
 
-  // Append the table to the grid container
+  table.appendChild(tbody);
   gridContainer.appendChild(table);
+
   return totalRows;
 }
 
@@ -1405,6 +1460,7 @@ function openVerifyDetailsWindow(
       columnNames,
       inputMap[headerArr[cntr]],
       cntr,
+      ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
     );
   }
 

@@ -919,26 +919,23 @@ async function openTimeTableWindow() {
 }
 
 async function distributeQPWindow() {
-  const outputData = await CALL_API_READ(
-    API_TYPE_CONSTANT.GET_CLASS_EXAM_SCHEDULE,
-    selectedTeacher,
-  );
+  const outputData = await CALL_API_CF("GET_CLASS_EXAM_SCHEDULE", {});
 
-  if (outputData?.status && outputData.response) {
+  if (outputData?.status && outputData.data) {
     if (
-      typeof outputData.response === "string" &&
-      outputData.response.includes("ERR")
+      typeof outputData.data === "string" &&
+      outputData.data.includes("ERR")
     ) {
-      SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
+      SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
       return;
     }
 
-    if (outputData.response.length == 0) {
+    if (outputData.data.length == 0) {
       SHOW_INFO_POPUP("No examinations scheduled in Gurukul for today");
       return;
     }
 
-    qpClassList = outputData.response;
+    qpClassList = outputData.data;
     populateStudentMultiSelectDropdown(
       "dynamic-class-list-qp",
       qpClassList,
