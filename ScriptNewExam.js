@@ -140,7 +140,7 @@ function loadStudents() {
       name: arr[0],
       col: arr[1],
       incomingMarks: arr.length == 3 ? arr[2] : "",
-
+      incomingMarksLoaded: false,
       saved: false,
       dirty: false,
 
@@ -313,7 +313,7 @@ function renderStudent() {
   let gmarks = -1;
   let lmarks = -1;
 
-  if (incomingMarks) {
+  if (incomingMarks && !student.incomingMarksLoaded) {
     let marksStringSplit = incomingMarks.split("\nComments\n");
     let marksSplitArr = marksStringSplit[0].split("\n");
     student.data.comment = marksStringSplit[1] || "";
@@ -348,6 +348,8 @@ function renderStudent() {
         }
       }
     }
+    student.incomingMarksLoaded = true;
+
     student.saved = true;
     clearDirty();
 
