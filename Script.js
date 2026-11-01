@@ -39,16 +39,14 @@ document.querySelectorAll(".accordion-header").forEach((header) => {
 });
 
 const feedbackArr = [
-  "😊Student's Behaviour is Perfect!👍",
-  "Not Disciplined behaviour",
-  "Not Follows Gurukul/Hostel schedule",
-  "Not Active in class",
-  "Not Complete homework on time",
-  "Not Good quality of home work",
-  "Not Chants seriously",
-  "Not Sincere in bringing textbook/workbook/notebook",
-  "Not Have good relations with others",
-  "Not Show proper respect to teachers",
+  "Sincere in class",
+  "Follows Gurukul/Hostel schedule",
+  "Active in class",
+  "Complete practice/class work on time",
+  "Chants seriously",
+  "Sincere in bringing textbook/workbook/notebook",
+  "Have good relations with others",
+  "Show proper respect to teachers (pranam, etc.)",
 ];
 
 function updateTimerColor(color = "black", toggleBtn) {

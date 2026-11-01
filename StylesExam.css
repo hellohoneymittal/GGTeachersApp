@@ -90,3 +90,42 @@
   color: grey; /* Light color for text when disabled */
   cursor: not-allowed; /* Shows a not-allowed cursor to indicate it cannot be clicked */
 }
+
+.feedback-grid-container {
+  width: 100%;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.feedback-grid {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.feedback-grid th,
+.feedback-grid td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: center;
+}
+
+.feedback-grid th {
+  background-color: #52609a;
+  font-weight: bold;
+  text-align: center;
+}
+
+.feedback-grid td:first-child {
+  text-align: left;
+  min-width: 150px;
+}
+
+.feedback-rating-cell {
+  width: 100px;
+}
+
+.feedback-radio {
+  cursor: pointer;
+  transform: scale(1.2);
+}

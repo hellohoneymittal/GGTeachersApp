@@ -710,121 +710,99 @@ function renderStudent() {
     divider.className = "divider";
     studentDiv.appendChild(divider);
 
-    const checkboxList = document.createElement("div");
+    const feedbackGrid = document.createElement("div");
+    feedbackGrid.className = "feedback-grid-container";
+    feedbackGrid.id = "feedbackList_" + studentCol;
 
-    checkboxList.className = "radio-container-student";
-    checkboxList.id = "feedbackList_" + studentCol; // optional but useful
+    const feedbackHeading = document.createElement("label");
+    feedbackHeading.textContent = "Behaviour Feedback";
+    feedbackHeading.className = "required";
 
-    // Append container first
-    studentDiv.appendChild(checkboxList);
+    feedbackGrid.appendChild(feedbackHeading);
 
-    const checkboxListHeading = document.createElement("div");
-    checkboxListHeading.className = "radio-heading-student";
+    const table = document.createElement("table");
+    table.className = "feedback-grid";
 
-    checkboxList.appendChild(checkboxListHeading);
+    // Create table header
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
 
-    const fblabel = document.createElement("label");
-    fblabel.textContent = "Behaviour Feedback";
-    fblabel.className = "required";
-    checkboxListHeading.appendChild(fblabel);
+    const headers = ["Behaviour", "Very Good", "Ok-Ok", "Not Good"];
 
-    const checkboxContent = document.createElement("div");
-    student.controls.feedback = checkboxContent;
-    checkboxContent.className = "radio-content-without-flex";
-    checkboxContent.id = "dynamic-feedback-list";
-
-    feedbackArr.forEach((feedback, index) => {
-      const feedbackId = `feedback-${index}-${studentCol}`; // unique id per student
-
-      const option = document.createElement("div");
-      option.classList.add("options");
-
-      if (feedback.includes("Not")) {
-        option.innerHTML = `
-          <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
-          <label for="${feedbackId}" class="custom-label-student-red">${feedback}</label>
-        `;
-      } else {
-        option.innerHTML = `
-          <input type="checkbox" id="${feedbackId}" name="feedbackList" value="${feedback}" class="custom-checkbox">
-          <label for="${feedbackId}" class="custom-label-student-green">${feedback}</label>
-        `;
-      }
-
-      checkboxContent.appendChild(option);
+    headers.forEach((heading) => {
+      const th = document.createElement("th");
+      th.textContent = heading;
+      headerRow.appendChild(th);
     });
 
-    checkboxList.appendChild(checkboxContent);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
 
+    const tbody = document.createElement("tbody");
+
+    const ratings = ["Very Good", "Ok-Ok", "Not Good"];
+
+    // Restore previously selected feedback
+    const savedFeedback = Array.isArray(student.data.feedback)
+      ? student.data.feedback
+      : [];
+
+    feedbackArr.forEach((feedback, index) => {
+      const row = document.createElement("tr");
+
+      // Behaviour name
+      const behaviourCell = document.createElement("td");
+      behaviourCell.textContent = feedback;
+      row.appendChild(behaviourCell);
+
+      // Find previously saved rating for this behaviour
+      const savedEntry = savedFeedback.find((entry) =>
+        entry.startsWith(feedback + " - "),
+      );
+
+      const savedRating = savedEntry
+        ? savedEntry.substring(feedback.length + 3)
+        : "";
+
+      // Create three mutually exclusive radio buttons
+      ratings.forEach((rating) => {
+        const td = document.createElement("td");
+        td.className = "feedback-rating-cell";
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = `feedback_${studentCol}_${index}`;
+        radio.value = rating;
+        radio.className = "feedback-radio";
+        radio.checked = savedRating === rating;
+
+        radio.addEventListener("change", () => {
+          markDirty();
+          const errorDiv = document.getElementById(`Errfeedback_${studentCol}`);
+
+          if (errorDiv) errorDiv.textContent = "";
+        });
+
+        td.appendChild(radio);
+        row.appendChild(td);
+      });
+
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    feedbackGrid.appendChild(table);
+
+    student.controls.feedback = feedbackGrid;
+
+    const lineBreak = document.createElement("br");
     const feedbackErr = document.createElement("div");
     feedbackErr.className = "error";
     feedbackErr.id = "Errfeedback_" + studentCol;
 
-    if (student.data.feedback) {
-      const selected = student.data.feedback;
-
-      checkboxContent
-        .querySelectorAll('input[type="checkbox"]')
-        .forEach((cb) => {
-          cb.checked = selected.includes(cb.value);
-        });
-    }
-
+    studentDiv.appendChild(feedbackGrid);
+    studentDiv.appendChild(lineBreak);
     studentDiv.appendChild(feedbackErr);
-
-    /* ---------- Mutually Exclusive Logic ---------- */
-
-    const checkboxes = checkboxContent.querySelectorAll(
-      'input[type="checkbox"]',
-    );
-
-    if (checkboxes.length > 1) {
-      const firstCheckbox = checkboxes[0];
-      const otherCheckboxes = Array.from(checkboxes).slice(1);
-
-      function updateCheckboxState() {
-        const firstChecked = firstCheckbox.checked;
-        const anyOtherChecked = otherCheckboxes.some((cb) => cb.checked);
-
-        if (firstChecked) {
-          // Disable and uncheck all others
-          otherCheckboxes.forEach((cb) => {
-            cb.checked = false;
-            cb.disabled = true;
-          });
-          firstCheckbox.disabled = false;
-        } else if (anyOtherChecked) {
-          // Disable first
-          firstCheckbox.checked = false;
-          firstCheckbox.disabled = true;
-
-          // Keep others enabled
-          otherCheckboxes.forEach((cb) => {
-            cb.disabled = false;
-          });
-        } else {
-          // Nothing selected -> enable all
-          firstCheckbox.disabled = false;
-          otherCheckboxes.forEach((cb) => {
-            cb.disabled = false;
-          });
-        }
-      }
-
-      student.controls.updateFeedbackState = updateCheckboxState;
-
-      // Listen to all checkboxes
-      checkboxes.forEach((cb) => {
-        cb.addEventListener("change", () => {
-          markDirty();
-
-          updateCheckboxState();
-        });
-      });
-
-      // Initialize state
-      updateCheckboxState();
-    }
   }
 
   panel.appendChild(studentDiv);
@@ -971,14 +949,9 @@ function clearCurrentStudentControls() {
   // -------------------------
 
   if (c.feedback) {
-    c.feedback.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-      cb.checked = false;
-      cb.disabled = false;
+    c.feedback.querySelectorAll('input[type="radio"]').forEach((radio) => {
+      radio.checked = false;
     });
-
-    if (c.updateFeedbackState) {
-      c.updateFeedbackState();
-    }
   }
 }
 
@@ -1045,20 +1018,31 @@ function validateCurrentStudent() {
   const feedbackList = document.getElementById(`feedbackList_${studentCol}`);
 
   if (feedbackList) {
-    const checkboxes = feedbackList.querySelectorAll(
-      'input[type="checkbox"][name="feedbackList"]',
-    );
-
     const errorDiv = document.getElementById(`Errfeedback_${studentCol}`);
 
-    const checked = [...checkboxes].filter((cb) => cb.checked);
+    const selectedFeedback = [];
 
-    if (checked.length == 0) {
-      errorDiv.innerHTML = "Please tick at least one checkbox!";
+    const ratingValues = {
+      "Very Good": 1,
+      "Ok-Ok": 0,
+      "Not Good": -1,
+    };
+
+    feedbackArr.forEach((feedback, index) => {
+      const selected = feedbackList.querySelector(
+        `input[name="feedback_${studentCol}_${index}"]:checked`,
+      );
+
+      if (selected) {
+        selectedFeedback.push(`${feedback}_${ratingValues[selected.value]}`);
+      }
+    });
+
+    if (selectedFeedback.length !== feedbackArr.length) {
+      errorDiv.textContent = "Please select a rating for every behaviour.";
     } else {
-      errorDiv.innerHTML = "";
-
-      student.data.feedback = checked.map((cb) => cb.value);
+      errorDiv.textContent = "";
+      student.data.feedback = selectedFeedback;
     }
   }
 
