@@ -12,6 +12,16 @@ let currentStudentName = "";
 
 let commentThresholdMarks = 0.5;
 
+document.addEventListener(
+  "wheel",
+  function (event) {
+    if (document.activeElement.matches('input[type="number"]')) {
+      document.activeElement.blur();
+    }
+  },
+  { passive: true },
+);
+
 function performClearStudent() {
   const student = studentList[currentStudentIndex];
 
@@ -404,7 +414,7 @@ function renderStudent() {
     input_marks.value = ""; // pre-fill value
     input_marks.className = "gg-name-exam";
     input_marks.id = "marks_" + studentCol;
-    input_marks.placeholder = "Enter Marks (0 to " + maxMarks + ")";
+    input_marks.placeholder = "0 to " + maxMarks;
 
     if (student.data.total !== undefined) {
       input_marks.value = student.data.total;
@@ -457,7 +467,7 @@ function renderStudent() {
     writing_input_marks.value = ""; // pre-fill value
     writing_input_marks.className = "gg-name-exam";
     writing_input_marks.id = "marks_writing_" + studentCol;
-    writing_input_marks.placeholder = "Enter Marks (0 to " + marksArr[1] + ")";
+    writing_input_marks.placeholder = "0 to " + marksArr[1];
 
     if (student.data.writing !== undefined) {
       writing_input_marks.value = student.data.writing;
@@ -516,7 +526,7 @@ function renderStudent() {
     grammar_input_marks.inputmode = "numeric";
     grammar_input_marks.className = "gg-name-exam";
     grammar_input_marks.id = "marks_grammar_" + studentCol;
-    grammar_input_marks.placeholder = "Enter Marks (0 to " + marksArr[2] + ")";
+    grammar_input_marks.placeholder = "0 to " + marksArr[2];
 
     if (student.data.grammar !== undefined) {
       grammar_input_marks.value = student.data.grammar;
@@ -575,8 +585,7 @@ function renderStudent() {
     literature_input_marks.name = "marks_literature_" + marksArr[3];
     literature_input_marks.required = true;
     literature_input_marks.id = "marks_literature_" + studentCol;
-    literature_input_marks.placeholder =
-      "Enter Marks (0 to " + marksArr[3] + ")";
+    literature_input_marks.placeholder = "0 to " + marksArr[3];
 
     if (student.data.literature !== undefined) {
       literature_input_marks.value = student.data.literature;
@@ -677,7 +686,7 @@ function renderStudent() {
     handwriting_marks.required = true;
     handwriting_marks.className = "gg-name-exam";
     handwriting_marks.id = "marks_handwriting_" + studentCol;
-    handwriting_marks.placeholder = "Enter Marks (0 to 10)";
+    handwriting_marks.placeholder = "0 to 10";
 
     if (student.data.handwriting !== undefined) {
       handwriting_marks.value = student.data.handwriting;
