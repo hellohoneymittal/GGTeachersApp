@@ -1,56 +1,114 @@
+/* Main layout: student panel on top, marks panel below */
 .marks-layout {
   display: flex;
-
-  gap: 20px;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  min-width: 0;
 }
 
+/* Student panel at the top */
 .marks-sidebar {
-  width: 38%;
-  /* flex-shrink: 0; */
-}
-
-.marks-main {
-  padding: 5px;
-  width: 60%;
-  /* flex: 1; */
-}
-
-.student-list {
-  max-height: 400px;
-
-  overflow-y: auto;
-
-  border: 3px solid #ddd;
-
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px;
   background-color: #fff5ea;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
+/* Marks panel below the student list */
+.marks-main {
+  width: 100%;
+  min-width: 0;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+/* Horizontal, scrollable student list */
+.student-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+
+  width: 100%;
+  max-height: none;
+  min-width: 0;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 8px;
+  box-sizing: border-box;
+
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff5ea;
+
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Individual student buttons */
 .student-row {
-  padding: 10px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-width: 110px;
+  max-width: 220px;
+  padding: 10px 14px;
 
   cursor: pointer;
+  white-space: nowrap;
 
-  display: flex;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-radius: 6px;
 
-  gap: 10px;
-
-  align-items: center;
-
-  border-bottom: 1px solid #eee;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
+/* Hover effect */
 .student-row:hover {
   background: #f8f8f8;
+  border-color: #2f80ed;
 }
 
+/* Selected student */
 .student-row.selected {
-  border-left: 5px solid #2f80ed;
-
+  background-color: #e8f0ff;
+  border: 2px solid #2f80ed;
   font-weight: bold;
 }
 
+/* Completed student */
 .student-row.completed {
   background: #edf8ed;
+  border-color: #81c784;
+}
+
+/* Smaller screens */
+@media (max-width: 600px) {
+  .marks-sidebar {
+    padding: 8px;
+  }
+
+  .student-row {
+    min-width: 100px;
+    padding: 9px 12px;
+  }
+
+  .marks-main {
+    padding: 2px;
+  }
 }
 
 .progress {

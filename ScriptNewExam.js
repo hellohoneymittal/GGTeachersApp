@@ -12,6 +12,18 @@ let currentStudentName = "";
 
 let commentThresholdMarks = 0.5;
 
+const ratingValues = {
+  "Very Good": 1,
+  "Ok-Ok": 0,
+  "Not Good": -1,
+};
+
+const ratingMap = {
+  1: "Very Good",
+  0: "Ok-Ok",
+  "-1": "Not Good",
+};
+
 document.addEventListener(
   "wheel",
   function (event) {
@@ -165,43 +177,49 @@ function createMarksLayout() {
   const container = document.getElementById("studentsMarksWindow");
 
   container.innerHTML = `
+    <br/>
+    <div class="marks-layout">
 
-<div class="marks-layout">
+      <!-- TOP STUDENT PANEL -->
+      <div class="marks-sidebar">
 
-    <div class="marks-sidebar">
+        <div class="student-toolbar">
 
-        <input
+          <input
             id="studentSearch"
             class="gg-name"
-            placeholder="Search Student">
+            type="text"
+            placeholder="Search Student..."
+            autocomplete="off"
+          >
 
-        <div id="progressLabel"></div>
+          <div>
+            <span id="progressLabel">Completed: 0 / 0</span>
 
-        <div class="progress">
-
-            <div id="progressBar"></div>
+            <div class="progress">
+              <div id="progressBar"></div>
+            </div>
+          </div>
 
         </div>
 
+        <!-- Horizontally scrollable student list -->
         <div
-            id="studentList"
-            class="student-list">
+          id="studentList"
+          class="student-list"
+        ></div>
 
-        </div>
+      </div>
+
+      <!-- MARKS ENTRY PANEL BELOW -->
+      <div class="marks-main">
+
+        <div id="studentPanel"></div>
+
+      </div>
 
     </div>
-
-    <div class="marks-main">
-
-        <div id="studentPanel">
-
-        </div>
-
-    </div>
-
-</div>
-
-`;
+  `;
 
   attachMarksEvents();
 }
@@ -765,13 +783,28 @@ function renderStudent() {
       row.appendChild(behaviourCell);
 
       // Find previously saved rating for this behaviour
-      const savedEntry = savedFeedback.find((entry) =>
-        entry.startsWith(feedback + " - "),
+      const savedEntry = savedFeedback.find(
+        (entry) =>
+          entry.startsWith(feedback + "_") ||
+          entry.startsWith(feedback + " - "),
       );
 
-      const savedRating = savedEntry
-        ? savedEntry.substring(feedback.length + 3)
-        : "";
+      let savedRating = "";
+
+      if (savedEntry) {
+        let savedValue;
+
+        if (savedEntry.startsWith(feedback + "_")) {
+          // Format: Respect Teachers_1
+          savedValue = savedEntry.substring(feedback.length + 1);
+        } else {
+          // Format: Respect Teachers - 1
+          savedValue = savedEntry.substring(feedback.length + 3);
+        }
+
+        // Convert the saved numeric value to the radio button label
+        savedRating = ratingMap[savedValue] || savedValue;
+      }
 
       // Create three mutually exclusive radio buttons
       ratings.forEach((rating) => {
@@ -1030,12 +1063,6 @@ function validateCurrentStudent() {
     const errorDiv = document.getElementById(`Errfeedback_${studentCol}`);
 
     const selectedFeedback = [];
-
-    const ratingValues = {
-      "Very Good": 1,
-      "Ok-Ok": 0,
-      "Not Good": -1,
-    };
 
     feedbackArr.forEach((feedback, index) => {
       const selected = feedbackList.querySelector(
