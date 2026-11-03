@@ -60,28 +60,54 @@ document
       };
 
       if (selected_value === "custom_input") {
+        let practice_box = document.getElementById("custom_practice_text");
+
         comment_box.value = "";
         comment_box.style.display = "block";
+
+        if (practice_box) {
+          practice_box.value = "";
+          practice_box.style.display = "block";
+        }
+
+        // Initially disabled
+        next_button.disabled = true;
+
         comment_err.innerHTML = "";
-        comment_err.style.display = "block";
+        comment_err.style.display = "none";
 
         comment_box.oninput = function () {
-          let val = this.value.trim();
+          const classWork = this.value.trim();
 
-          if (val.length < 10) {
+          // Enable ONLY when Class Work has >= 10 characters
+          next_button.disabled = classWork.length < 10;
+
+          if (classWork.length > 0 && classWork.length < 10) {
             comment_err.innerHTML = "Minimum 10 characters required";
-            next_button.disabled = true;
+            comment_err.style.display = "block";
           } else {
             comment_err.innerHTML = "";
-            next_button.disabled = false;
+            comment_err.style.display = "none";
           }
         };
       } else {
-        if (comment_box) {
-          comment_box.value = "";
-          comment_box.style.display = "none";
-          comment_err.innerHTML = "";
-          comment_err.style.display = "none";
+        const commentBox = document.getElementById("custom_comment_text");
+        const commentErr = document.getElementById("Errcustom_comment_text");
+        const practiceBox = document.getElementById("custom_practice_text");
+
+        if (commentBox) {
+          commentBox.value = "";
+          commentBox.style.display = "none";
+        }
+
+        if (commentErr) {
+          commentErr.innerHTML = "";
+          commentErr.style.display = "none";
+        }
+
+        if (practiceBox) {
+          practiceBox.value = "";
+          practiceBox.style.display = "none";
         }
 
         if (selected_value === "book_questions") {
@@ -348,9 +374,34 @@ function submitLP(in_flag = 2) {
     selectedLessonPlan["worktype"] = selectedRadio.value;
     selectedLessonPlan["workdescription"] = "CW:$\n" + selectedRadio.value;
 
-    if (selectedRadio.id == "custom_input")
-      selectedLessonPlan["workdescription"] =
-        "CW:$\n" + document.getElementById("custom_comment_text").value.trim();
+    if (selectedRadio.id === "custom_input") {
+      const classWork = document
+        .getElementById("custom_comment_text")
+        .value.trim();
+
+      const homework = document
+        .getElementById("custom_practice_text")
+        .value.trim();
+
+      if (classWork.length < 10) {
+        document.getElementById("Errcustom_comment_text").innerHTML =
+          "Minimum 10 characters required";
+
+        document.getElementById("Errcustom_comment_text").style.display =
+          "block";
+
+        return;
+      }
+
+      // Always include Class Work
+      selectedLessonPlan["workdescription"] = "CW:$\n" + classWork;
+
+      // Include Practice Work only if the teacher entered something
+      if (homework !== "") {
+        selectedLessonPlan["workdescription"] +=
+          "\nxxxxxxxx\nHW:$\n" + homework;
+      }
+    }
 
     SHOW_CONFIRMATION_POPUP(
       "Are you sure to submit today's work!",
@@ -411,18 +462,18 @@ function submitLP(in_flag = 2) {
 
 async function sendTodaysWorkBackend() {
   console.log(selectedLessonPlan);
-  const outputData = await CALL_API(
-    API_TYPE_CONSTANT.SUBMIT_TODAYS_WORK,
+  const outputData = await CALL_API_WRITE_CF(
+    "SUBMIT_TODAYS_WORK",
     selectedLessonPlan,
   );
 
   if (
     outputData?.status &&
-    outputData.response &&
-    typeof outputData.response === "string"
+    outputData.data &&
+    typeof outputData.data === "string"
   ) {
-    console.log(outputData.response);
-    if (outputData.response == "ok")
+    console.log(outputData.data);
+    if (outputData.data == "ok")
       SHOW_SUCCESS_POPUP(
         "Today's work submitted Successfully!",
         markAttendanceFlag == 0
@@ -640,21 +691,37 @@ async function showLPWindow() {
         label_element.innerHTML = custom_input_label;
         input_element.value = custom_input_label;
 
-        let text_element = document.createElement("textarea");
+        // Mandatory Class Work textarea
+        const text_element = document.createElement("textarea");
         text_element.required = true;
-        text_element.placeholder = "Only Class Work to be entered!";
+        text_element.placeholder = "Enter Class Work (mandatory)";
         text_element.style.display = "none";
         text_element.value = "";
         text_element.id = "custom_comment_text";
+        text_element.rows = 3;
+        text_element.style.width = "100%";
 
         dynamic_option_element.appendChild(text_element);
 
-        let err_element = document.createElement("div");
+        const err_element = document.createElement("div");
         err_element.className = "error";
         err_element.id = "Errcustom_comment_text";
         err_element.style.display = "none";
 
         dynamic_option_element.appendChild(err_element);
+
+        // Optional Practice Work textarea
+        const practice_element = document.createElement("textarea");
+        practice_element.required = false;
+        practice_element.placeholder = "Enter Practice Work (optional)";
+        practice_element.style.display = "none";
+        practice_element.value = "";
+        practice_element.id = "custom_practice_text";
+        practice_element.rows = 3;
+        practice_element.style.width = "100%";
+        practice_element.style.marginTop = "10px";
+
+        dynamic_option_element.appendChild(practice_element);
       }
     }
 
