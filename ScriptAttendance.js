@@ -603,7 +603,7 @@ function goToStudentContainer() {
 }
 
 async function getStudentDetails(inputLeaveFlag = 0) {
-  const outputData = await CALL_API(API_TYPE_CONSTANT.STUDENT_DETAILS, {
+  const outputData = await CALL_API_CF("STUDENT_DETAILS", {
     leaveFlag: inputLeaveFlag,
   });
   const studentTbody = document.getElementById("studentTable");
@@ -642,20 +642,20 @@ async function getStudentDetails(inputLeaveFlag = 0) {
     render(filtered);
   });
 
-  if (outputData?.status && outputData.response) {
+  if (outputData?.status && outputData.data) {
     if (typeof outputData.data === "string") {
-      if (outputData.response.includes("ERR"))
-        SHOW_ERROR_POPUP(outputData.response.split("ERR: ")[1]);
-      else SHOW_INFO_POPUP(outputData.response);
+      if (outputData.data.includes("ERR"))
+        SHOW_ERROR_POPUP(outputData.data.split("ERR: ")[1]);
+      else SHOW_INFO_POPUP(outputData.data);
       return;
     }
 
-    if (outputData.response.output.length == 0) {
+    if (outputData.data.output.length == 0) {
       SHOW_INFO_POPUP(`Unable to fetch Details!`);
       return;
     }
 
-    studentsDetailsArr = outputData.response.output;
+    studentsDetailsArr = outputData.data.output;
 
     console.log(studentsDetailsArr);
 
