@@ -46,7 +46,7 @@ const feedbackArr = [
   "Chants seriously",
   "Sincere in bringing textbook/workbook/notebook",
   "Have good relations with others",
-  "Show proper respect to teachers (pranam, etc.)",
+  "Show proper respect to teachers (pranam; etc.)",
 ];
 
 function updateTimerColor(color = "black", toggleBtn) {
