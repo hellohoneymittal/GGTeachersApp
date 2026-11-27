@@ -55,10 +55,16 @@
   margin-bottom: 14px;
 }
 
-.feedback-summary-table th,
+.feedback-summary-table th {
+  border: 1px solid #ccc;
+  padding: 5px 6px 5px 6px;
+  text-align: center;
+  font-size: 16px;
+}
+
 .feedback-summary-table td {
   border: 1px solid #ccc;
-  padding: 8px 6px 10px 6px;
+  padding: 0px 6px 15px 6px;
   text-align: center;
   font-size: 16px;
 }
@@ -132,6 +138,61 @@
 
 .feedback-question-table th:nth-child(3),
 .feedback-question-table th:nth-child(4) {
+  width: 14%;
+  text-align: center;
+}
+
+/*Subject wise table*/
+.feedback-question-table-sub {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.feedback-question-table-sub th,
+.feedback-question-table-sub td {
+  border: 1px solid #000;
+  padding: 5px 5px 5px 5px;
+  line-height: 1.2;
+  vertical-align: top;
+  font-size: 16px;
+}
+
+.feedback-question-table-sub th {
+  background: #52609a;
+  text-align: center;
+}
+
+.feedback-question-table-sub td:first-child {
+  width: 8%;
+  text-align: center;
+  padding: 15px 5px 18px;
+}
+
+.feedback-question-table-sub th:first-child {
+  width: 8%;
+  text-align: center;
+}
+
+.feedback-question-table-sub td:nth-child(2) {
+  width: 25%;
+  text-align: left;
+  padding: 15px 5px 18px;
+}
+
+.feedback-question-table-sub td:nth-child(3),
+.feedback-question-table-sub td:nth-child(4),
+.feedback-question-table-sub td:nth-child(5),
+.feedback-question-table-sub td:nth-child(6),
+.feedback-question-table-sub td:nth-child(7),
+.feedback-question-table-sub td:nth-child(8) {
+  width: 14%;
+  text-align: center;
+  padding: 15px 5px 18px;
+}
+
+.feedback-question-table-sub th:nth-child(3),
+.feedback-question-table-sub th:nth-child(4) {
   width: 14%;
   text-align: center;
 }

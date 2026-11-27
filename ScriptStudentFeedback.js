@@ -649,16 +649,35 @@ function populateFeedbackReportSubjects() {
 function populateFeedbackReportExams() {
   const select = document.getElementById("feedbackReportExam");
 
-  select.innerHTML = `<option value="" selected>
-       All Exams
-     </option>`;
+  select.innerHTML = `<option value="">All Exams</option>`;
 
-  const subjectData =
-    studentFeedbackReportData[feedbackReportClass]?.[feedbackReportSubject];
+  const classData = studentFeedbackReportData[feedbackReportClass];
 
-  if (!subjectData) return;
+  if (!classData) return;
 
-  Object.keys(subjectData).forEach((examName) => {
+  let examNames = [];
+
+  if (feedbackReportSubject) {
+    // Exams of selected subject
+    const subjectData = classData[feedbackReportSubject];
+
+    if (subjectData) {
+      examNames = Object.keys(subjectData);
+    }
+  } else {
+    // Unique exams across all subjects
+    const examSet = new Set();
+
+    Object.values(classData).forEach((subjectData) => {
+      Object.keys(subjectData).forEach((examName) => {
+        examSet.add(examName);
+      });
+    });
+
+    examNames = [...examSet];
+  }
+
+  examNames.forEach((examName) => {
     const option = document.createElement("option");
 
     option.value = examName;
@@ -694,6 +713,69 @@ function resetFeedbackReportExam() {
   select.disabled = true;
 
   feedbackReportExam = "";
+}
+
+function createFeedbackSubjectTable(exams) {
+  const subjectMap = {};
+
+  exams.forEach(({ subjectName, examData }) => {
+    if (!subjectMap[subjectName]) {
+      subjectMap[subjectName] = {
+        good: 0,
+        noGood: 0,
+      };
+    }
+
+    const students = parseFeedbackString(examData.feedback || "");
+
+    students.forEach((student) => {
+      subjectMap[subjectName].good += student.good.length;
+      subjectMap[subjectName].noGood += student.noGood.length;
+    });
+  });
+
+  let rows = "";
+
+  Object.entries(subjectMap)
+    .sort((a, b) => b[1].noGood - a[1].noGood)
+    .forEach(([subject, data], index) => {
+      const total = data.good + data.noGood;
+
+      const goodPercentage = total ? (data.good / total) * 100 : 0;
+
+      const noGoodPercentage = total ? (data.noGood / total) * 100 : 0;
+
+      rows += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeFeedbackHTML(subject)}</td>
+        <td class="feedback-good">${data.good}</td>
+        <td class="feedback-no-good">${data.noGood}</td>
+        <td class="feedback-good">${goodPercentage.toFixed(2)}%</td>
+        <td class="feedback-no-good">${noGoodPercentage.toFixed(2)}%</td>
+      </tr>
+    `;
+    });
+
+  return `
+    <div class="collection-table-container scrollable-content-table">
+      <table class="feedback-question-table-sub">
+        <thead class="table-header">
+          <tr>
+            <th>S No.</th>
+            <th>Subject</th>
+            <th>Good</th>
+            <th>Not Good</th>
+            <th>Good %</th>
+            <th>Not Good %</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 /* =========================================================
@@ -771,25 +853,48 @@ function splitFeedbackQuestions(text) {
 ========================================================= */
 
 function getFeedbackReportExams() {
-  const subjectData =
-    studentFeedbackReportData[feedbackReportClass]?.[feedbackReportSubject];
+  const classData = studentFeedbackReportData[feedbackReportClass];
+
+  if (!classData) return [];
+
+  let exams = [];
+
+  // No subject selected
+  if (!feedbackReportSubject) {
+    Object.entries(classData).forEach(([subjectName, subjectData]) => {
+      Object.entries(subjectData).forEach(([examName, examData]) => {
+        if (!feedbackReportExam || examName === feedbackReportExam) {
+          exams.push({
+            examName,
+            subjectName,
+            examData,
+          });
+        }
+      });
+    });
+
+    return exams;
+  }
+
+  // Subject selected
+  const subjectData = classData[feedbackReportSubject];
 
   if (!subjectData) return [];
 
   if (!feedbackReportExam) {
     return Object.entries(subjectData).map(([examName, examData]) => ({
       examName,
+      subjectName: feedbackReportSubject,
       examData,
     }));
   }
 
-  if (!subjectData[feedbackReportExam]) {
-    return [];
-  }
+  if (!subjectData[feedbackReportExam]) return [];
 
   return [
     {
       examName: feedbackReportExam,
+      subjectName: feedbackReportSubject,
       examData: subjectData[feedbackReportExam],
     },
   ];
@@ -851,7 +956,7 @@ function buildFeedbackStatistics(exams) {
 ========================================================= */
 
 function renderStudentFeedbackReport() {
-  if (!feedbackReportClass || !feedbackReportSubject) {
+  if (!feedbackReportClass) {
     clearFeedbackReportOutput();
     return;
   }
@@ -881,8 +986,8 @@ function renderStudentFeedbackReport() {
 
   let teacherHTML = "";
 
-  // Show teacher only when a specific exam is selected
-  if (feedbackReportExam) {
+  // Show teacher only for a specific subject and exam
+  if (feedbackReportSubject && feedbackReportExam) {
     const examData = exams[0].examData;
 
     teacherHTML = `
@@ -893,6 +998,22 @@ function renderStudentFeedbackReport() {
     `;
   }
 
+  // Decide which detailed table to display
+  const detailTableHTML = feedbackReportSubject
+    ? `
+        <div class="feedback-report-section-title">
+          Question-wise Feedback
+        </div>
+        ${createFeedbackQuestionTable(stats.questionMap)}
+      `
+    : `
+        <div class="feedback-report-section-title">
+          Subject-wise Feedback
+        </div>
+        ${createFeedbackSubjectTable(exams)}
+      `;
+
+  // Render complete report
   document.getElementById("feedbackReportOutput").innerHTML = `
 
     <div class="feedback-report-header">
@@ -900,14 +1021,17 @@ function renderStudentFeedbackReport() {
       <h3>
         ${escapeFeedbackHTML(feedbackReportClass)}
         -
-        ${escapeFeedbackHTML(feedbackReportSubject)}
+        ${
+          feedbackReportSubject
+            ? escapeFeedbackHTML(feedbackReportSubject)
+            : "All Subjects"
+        }
       </h3>
 
       <div class="feedback-report-exam">
         ${
           feedbackReportExam
-            ? `Examination:
-               ${escapeFeedbackHTML(feedbackReportExam)}`
+            ? `Examination: ${escapeFeedbackHTML(feedbackReportExam)}`
             : `All Examinations`
         }
       </div>
@@ -916,15 +1040,13 @@ function renderStudentFeedbackReport() {
 
     </div>
 
-
     <div class="feedback-report-section-title">
       Overall Feedback
     </div>
 
-
     <table class="feedback-summary-table">
 
-      <thead>
+      <thead class="table-header">
         <tr>
           <th>Good</th>
           <th>Not Good</th>
@@ -935,7 +1057,6 @@ function renderStudentFeedbackReport() {
 
       <tbody>
         <tr>
-
           <td class="feedback-good">
             ${stats.totalGood}
           </td>
@@ -951,18 +1072,12 @@ function renderStudentFeedbackReport() {
           <td class="feedback-no-good">
             ${noGoodPercentage.toFixed(2)}%
           </td>
-
         </tr>
       </tbody>
 
     </table>
 
-
-    <div class="feedback-report-section-title">
-      Question-wise Feedback
-    </div>
-
-    ${createFeedbackQuestionTable(stats.questionMap)}
+    ${detailTableHTML}
 
   `;
 }
@@ -1072,7 +1187,7 @@ function escapeFeedbackHTML(value) {
 function clearFeedbackReportOutput() {
   document.getElementById("feedbackReportOutput").innerHTML = `
     <div class="feedback-report-message">
-      Select Class and Subject to view the report.
+      Select Class to view the report.
     </div>
   `;
 }
@@ -1094,9 +1209,13 @@ document
 
     if (feedbackReportClass) {
       populateFeedbackReportSubjects();
-    }
+      populateFeedbackReportExams();
 
-    clearFeedbackReportOutput();
+      // Show overall report for all subjects and all exams
+      renderStudentFeedbackReport();
+    } else {
+      clearFeedbackReportOutput();
+    }
   });
 
 /* =========================================================
@@ -1107,24 +1226,17 @@ document
   .getElementById("feedbackReportSubject")
   .addEventListener("change", function () {
     feedbackReportSubject = this.value;
-
     feedbackReportExam = "";
 
     resetFeedbackReportExam();
 
     if (feedbackReportSubject) {
       populateFeedbackReportExams();
-
-      /*
-        Exam is optional.
-        Therefore immediately show
-        ALL EXAMS report.
-      */
-
-      renderStudentFeedbackReport();
-    } else {
-      clearFeedbackReportOutput();
+    } else if (feedbackReportClass) {
+      populateFeedbackReportExams();
     }
+
+    renderStudentFeedbackReport();
   });
 
 /* =========================================================
