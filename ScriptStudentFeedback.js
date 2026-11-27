@@ -1087,7 +1087,9 @@ function renderStudentFeedbackReport() {
 ========================================================= */
 
 function createFeedbackQuestionTable(questionMap) {
-  const questions = Object.keys(questionMap);
+  const questions = Object.keys(questionMap).sort(
+    (a, b) => questionMap[b].noGood - questionMap[a].noGood,
+  );
 
   if (!questions.length) {
     return `
