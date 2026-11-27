@@ -56,14 +56,14 @@
 }
 
 .feedback-summary-table th {
-  border: 1px solid #ccc;
+  border: 1px solid black;
   padding: 5px 6px 5px 6px;
   text-align: center;
   font-size: 16px;
 }
 
 .feedback-summary-table td {
-  border: 1px solid #ccc;
+  border: 1px solid black;
   padding: 0px 6px 15px 6px;
   text-align: center;
   font-size: 16px;
